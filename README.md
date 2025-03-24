@@ -4,8 +4,8 @@
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/library-database.git
-   cd library-database
+   git clone https://github.com/jnn4/CMPT-354-MP.git
+   cd CMPT-354-MP
    ```
 
 2. Set up a virtual environment:
@@ -18,10 +18,6 @@
    ```bash
    pip install -r requirements.txt
    ```
-### 4. **Running the Application**
-By default, the app will run on `http://127.0.0.1:5000.` Open this URL in your browser to access the app.
-
-
 
 ## Running the Application
 
@@ -29,9 +25,9 @@ To run the application, use the following command:
 ```bash
 python app.py
 ```
+By default, the app will run on `http://127.0.0.1:5000.` Open this URL in your browser to access the app.
 
-
-### 5. **Using the Application**
+## **Using the Application**
 Provide instructions on how to use the application. This can include:
 - How to add a new user
 - Find an item in the library
