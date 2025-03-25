@@ -3,6 +3,7 @@ import '../app.css';
 
 function Items() {
   const [books, setBooks] = useState([]);
+  const [searchText, setSearchText] = useState('');
 
   // Fetch books from Flask API
   useEffect(() => {
@@ -15,6 +16,12 @@ function Items() {
   return (
     <div className="content">
       <h1>Library Books</h1>
+      <input
+        type="text"
+        placeholder="Search"
+        value={searchText}
+        onChange={(e) => setSearchText(e.target.value)}
+      />
       <ul>
         {books.map((book) => (
           <li key={book.id}>

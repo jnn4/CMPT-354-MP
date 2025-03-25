@@ -10,7 +10,6 @@ import Contact from "./components/contact";
 import Navbar from "./components/navbar";
 import Login from "./components/login";
 import Signup from "./components/signup";
-import './app.css';
 
 function App() {
 

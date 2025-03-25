@@ -26,6 +26,60 @@
     text-align: center; /* Ensures text inside is centered */
   }
 
+  .rounded-textbox {
+    border: 2px solid #ccc;
+    border-radius: 10px; /* Adjust for more/less rounding */
+    padding: 10px;
+    width: 270px;
+    outline: none;
+    margin-top: 10px;
+}
+
+button {
+    background-color: #010101;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 20px;
+    width: 300px;
+}
+
+.box {
+    border: 2px solid #ccc;
+    border-radius: 10px; /* Adjust for more/less rounding */
+    padding: 20px;
+    width: 300px;
+    height: 300px;
+    outline: none;
+    text-align: left;
+}
+
+.container {
+  display: flex;
+  justify-content: center; /* Centers horizontally */
+  /* align-items: center;  Centers vertically */
+  height: 100vh; /* Full viewport height */
+}
+
+/* ul {
+  width: 360;
+  height: 88;
+  min-height: 88px;
+  top: 271.5px;
+  left: 792.23px;
+}
+
+li {
+  width: 360;
+  height: 44;
+  min-height: 44px;
+  top: 271.5px;
+  left: 792.23px;
+} */
+
   
 
   
