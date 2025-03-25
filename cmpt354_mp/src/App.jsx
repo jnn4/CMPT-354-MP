@@ -13,14 +13,6 @@ import Signup from "./components/signup";
 import './app.css';
 
 function App() {
-  const [data, setData] = useState(null);
-
-  useEffect(() => {
-    fetch("/api/data") // Vite proxy will forward this
-      .then((response) => response.json())
-      .then((data) => setData(data.message))
-      .catch((error) => console.error("Error:", error));
-  }, []);
 
   return (
     <Router>
