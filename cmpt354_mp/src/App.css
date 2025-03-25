@@ -1,0 +1,31 @@
+.app-container {
+    display: flex;
+    height: 100vh;
+    font-family: Hiragino Sans GB;
+    
+  }
+
+  h1{
+    font-weight: 300;
+    font-size: 36px;
+    line-height: 100%;
+    letter-spacing: 0%;
+    text-align: center;
+  }
+  
+/* Main content should take the remaining space */
+.content {
+    flex: 1;
+    margin-left: 150px; /* Matches the sidebar width */
+    padding: 20px;
+    overflow-y: auto; /* Enable scrolling if content is too long */
+    /* Flexbox for centering content 
+    display: flex;*/
+    justify-content: center; /* Centers content horizontally */
+    align-items: center; /* Centers content vertically */
+    text-align: center; /* Ensures text inside is centered */
+  }
+
+  
+
+  
