@@ -13,7 +13,7 @@ function Items() {
   }, []);
 
   return (
-    <div className="App">
+    <div className="content">
       <h1>Library Books</h1>
       <ul>
         {books.map((book) => (
