@@ -18,15 +18,14 @@ function volunteer() {
               <br></br>
               <button type="submit">Sign Up</button>
           </form>
-          <p>Have an account? <a href="/Login">[Log In]</a></p>
       </div>
-      <div>
+      <div className="volContainer">
         <p>Available Position: </p>
         {/* Map positions that are left*/}
-        <ul>
-          <li>Position 1</li>
-          <li>Position 2</li>
-          <li>Position 3</li>
+        <ul className="items">
+          <li className="items">Position 1</li>
+          <li className="items" >Position 2</li>
+          <li className="items">Position 3</li>
         </ul>
       </div>
     </div>

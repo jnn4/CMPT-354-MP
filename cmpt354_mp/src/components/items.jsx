@@ -16,19 +16,30 @@ function Items() {
   return (
     <div className="content">
       <h1>Library Books</h1>
+      <p>Labels</p>
+      <button className="items">Name</button>
+      <button className="items">Audience</button>
+      <button className="items">Date</button>
+      <button className="items">Time</button>
+      <button className="items">Type</button>
+
+      <br></br>
+
       <input
+        className = "rounded-textbox"
         type="text"
         placeholder="Search"
         value={searchText}
         onChange={(e) => setSearchText(e.target.value)}
       />
-      <ul>
+      <ul className="items">
         {books.map((book) => (
-          <li key={book.id}>
+          <li className="items" key={book.id}>
             {book.title} by {book.author} ({book.year_published})
           </li>
         ))}
       </ul>
+      
     </div>
   );
 }
