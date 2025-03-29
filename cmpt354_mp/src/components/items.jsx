@@ -7,11 +7,20 @@ function Items() {
 
   // Fetch books from Flask API
   useEffect(() => {
-    fetch("http://localhost:5000/api/books")
+    fetch("http://localhost:8000/api/books")
       .then((response) => response.json()) // Convert response to JSON
       .then((data) => setBooks(data)) // Store the data in state
       .catch((error) => console.error("Error:", error));
   }, []);
+
+  const filteredBooks = books.filter(
+    (book) =>
+      book.title.toLowerCase().includes(searchText.toLowerCase()) ||
+      book.author.toLowerCase().includes(searchText.toLowerCase()) ||
+      (book.year_published && book.year_published.toString().includes(searchText))
+  );
+
+  // Function that handles book borrowing
 
   return (
     <div className="content">
@@ -26,18 +35,27 @@ function Items() {
       <br></br>
 
       <input
-        className = "rounded-textbox"
+        className="rounded-textbox"
         type="text"
         placeholder="Search"
         value={searchText}
         onChange={(e) => setSearchText(e.target.value)}
       />
+      
       <ul className="items">
-        {books.map((book) => (
+      {filteredBooks.map((book) => (
           <li className="items" key={book.id}>
             {book.title} by {book.author} ({book.year_published})
+            {book.borrowed ? (
+              <button className="items">Borrowed</button>
+            ) : (
+              <button className="items">Available</button>
+            )}
           </li>
         ))}
+        {filteredBooks.length === 0 && searchText && (
+          <li className="items">No results found</li>
+        )}
       </ul>
       
     </div>
