@@ -11,7 +11,7 @@ import Navbar from "./components/navbar";
 import Login from "./components/login";
 import Signup from "./components/signup";
 import UserHome from "./components/userHome";
-import Events from "./components/events";;
+import Events from "./components/events";
 
 function App() {
 
