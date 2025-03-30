@@ -21,9 +21,9 @@ def signup():
 
     # Create new user
     new_user = User(
-        name=data['email'],  # You could change this to ask for a separate name field
+        name=data['email'], 
         email=data['email'],
-        password_hash=generate_password_hash(data['password'], method='pbkdf2:sha256'),
+        password_hash=generate_password_hash(data['password'], method='pbkdf2:sha256'), # some pw hashing method
         role='user'
     )
 
