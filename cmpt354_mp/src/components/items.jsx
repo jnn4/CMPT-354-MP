@@ -13,6 +13,17 @@ function Items() {
       .catch((error) => console.error("Error:", error));
   }, []);
 
+  // Function to add a book
+  window.onload = function() {
+    fetch('http://localhost:8000/api/books/populate_books', {
+      method: 'POST',
+    })
+    .then(response => response.json())
+    .then(data => console.log("Book added:", data))
+    .catch(error => console.error('Error:', error));
+  }
+
+  // Function to filter books based on search text
   const filteredBooks = books.filter(
     (book) =>
       book.title.toLowerCase().includes(searchText.toLowerCase()) ||
