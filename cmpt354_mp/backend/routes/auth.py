@@ -1,6 +1,8 @@
 from flask import Blueprint, request, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
+from models import Person
 from models import User
+from models import Staff
 from extensions import db
 from flask_cors import CORS  # Ensure CORS is imported
 
@@ -15,25 +17,30 @@ CORS(auth_bp, resources={r"/*": {"origins": "http://localhost:5173"}})
 def signup():
     data = request.get_json()
 
-    # Check if user already exists
+    # Check if email already exists
     if User.query.filter_by(email=data['email']).first():
-        return jsonify({'message': 'User already exists'}), 400
+        return jsonify({'message': 'Email already registered'}), 400
 
-    # Create new user
-    new_user = User(
-        name=data['email'], 
+    # Create a new Person record
+    new_person = Person(
         email=data['email'],
-        password_hash=generate_password_hash(data['password'], method='pbkdf2:sha256'), # some pw hashing method
-        role='user'
+        first_name=data['first_name'],
+        last_name=data['last_name'],
+        phone_num=data.get('phone_num'),
+        age=data.get('age')
     )
+    db.session.add(new_person)
 
-    try:
-        db.session.add(new_user)
-        db.session.commit()
-        return jsonify({'message': 'User created successfully'}), 200
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'message': str(e)}), 500
+    # Create a new User record
+    new_user = User(
+        email=new_person.email,
+    )
+    new_user.set_password(data['password'])  # Hash and store the password using pbkdf2:sha256
+    db.session.add(new_user)
+
+    db.session.commit()
+
+    return jsonify({'message': 'Signup successful'}), 201
 
 # Login route
 @auth_bp.route('/login', methods=['POST'])
@@ -41,14 +48,14 @@ def login():
     data = request.get_json()
     user = User.query.filter_by(email=data['email']).first()
 
-    if not user or not check_password_hash(user.password_hash, data['password']):
+    if not user or not user.check_password(data['password']):  # Use check_password() method
         return jsonify({'message': 'Invalid credentials'}), 401
 
     return jsonify({
         'message': 'Login successful',
-        'name': user.name,  # Add name here
+        'name': f"{user.person.first_name} {user.person.last_name}",  # Get name from Person
         'email': user.email,
-        'role': user.role
+        'role': 'user'  # Add role logic if needed
     }), 200
 
 @auth_bp.route('/login', methods=['OPTIONS'])

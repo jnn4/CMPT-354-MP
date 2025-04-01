@@ -2,38 +2,38 @@ import '../App.css';
 import React, { useState } from 'react';
 
 function Login() {
-    const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
 
-    // Handle form submit
     const handleSubmit = async (event) => {
-        event.preventDefault();  // Prevent form from refreshing the page
+        event.preventDefault();
         try {
-            // Send POST request to backend
             const response = await fetch('http://localhost:8000/auth/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    email: username,
+                    email: email,
                     password: password
                 }),
             });
 
             const data = await response.json();
             
-            if (response.status === 200) {
+            if (response.ok) {
                 console.log('Login successful', data);
-                window.location.href = '/userHome';
+                // Store user data and redirect
+                localStorage.setItem('userEmail', email);
+                localStorage.setItem('userRole', data.role);  // Assuming backend returns role
+                window.location.href = data.role === 'staff' ? '/staff-dashboard' : '/user-dashboard';
             } else {
-                // Show error message if login fails
-                setErrorMessage(data.message || 'Invalid credentials');
+                setErrorMessage(data.message || 'Invalid email or password');
             }
         } catch (error) {
-            console.error('Error during login:', error);
-            setErrorMessage('An error occurred during login. Please try again.');
+            console.error('Login error:', error);
+            setErrorMessage('Unable to connect to server. Please try again.');
         }
     };
 
@@ -44,33 +44,30 @@ function Login() {
                 <div className="box">
                     <form onSubmit={handleSubmit}>
                         <label>Email: </label>
-                        <br />
                         <input
-                            type="text"
+                            type="email"
                             className="rounded-textbox"
-                            id="username"
-                            name="username"
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
                             required
+                            autoComplete="username"
                         />
-                        <br />
-                        <br />
+                        
                         <label>Password: </label>
-                        <br />
                         <input
                             type="password"
                             className="rounded-textbox"
-                            id="password"
-                            name="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
+                            autoComplete="current-password"
                         />
-                        <br />
+                        
                         <button type="submit">Login</button>
                     </form>
-                    {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
+                    
+                    {errorMessage && <p className="error-message">{errorMessage}</p>}
+                    
                     <p>Don't have an account? <a href="/signup">[Sign Up]</a></p>
                 </div>
             </div>
