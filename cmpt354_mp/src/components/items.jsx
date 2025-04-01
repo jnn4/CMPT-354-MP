@@ -2,9 +2,9 @@ import React, { useEffect, useState } from 'react';
 import '../app.css';
 
 function Items() {
-  const [items, setItem] = useState([]);
+  const [items, setItems] = useState([]);
   const [searchText, setSearchText] = useState('');
-  const [itemsPopulated, setItemPopulated] = useState(false);
+  const [itemsPopulated, setItemsPopulated] = useState(false);
 
   useEffect(() => {
     // Fetch books only once when the component mounts

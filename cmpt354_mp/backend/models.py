@@ -11,8 +11,8 @@ class Person(db.Model):
     phone_num = db.Column(db.String(20), nullable=True)
     age = db.Column(db.Integer, nullable=True)
 
-    user = db.relationship('User', backref='person', uselist=False)
-    staff = db.relationship('Staff', backref='person', uselist=False)
+    user = db.relationship('User', backref=db.backref('person', uselist=False))
+    staff = db.relationship('Staff',backref=db.backref('person', uselist=False))
 
 
 
@@ -25,7 +25,12 @@ class User(db.Model):
     password = db.Column(db.String(255), nullable=False)  # Hashed password
     
     # Relationship with Borrow Transactions
-    BorrowTransaction = db.relationship('BorrowTransaction', backref='user', lazy=True)
+    # BorrowTransaction = db.relationship('BorrowTransaction', backref=db.backref('person', uselist=False))
+
+    borrow_transactions = db.relationship(
+        "BorrowTransaction",
+        back_populates="person"
+    )
 
     def __init__(self, email, password, role='user'):
         self.email = email
@@ -71,7 +76,7 @@ class Event(db.Model):
     time = db.Column(db.Time, nullable=False)
     room_id = db.Column(db.Integer, db.ForeignKey('room.room_id'), nullable=True)
 
-    room = db.relationship('Room', backref='events')
+    room = db.relationship('Room', backref=db.backref('events', uselist=False))
 
 # Audience Table
 class Audience(db.Model):
@@ -111,8 +116,13 @@ class BorrowTransaction(db.Model):
     item_id = db.Column(db.Integer, db.ForeignKey('item.item_id'))  # Reference to 'item' table
     borrowed_at = db.Column(db.DateTime, default=datetime)
 
-    user = db.relationship('User', backref='borrow_transactions')
-    book = db.relationship('Item', backref='borrow_transactions')
+    #user = db.relationship('User', backref=db.backref('borrow_transactions', uselist=False))
+    person = db.relationship(
+            "User",
+            back_populates="borrow_transactions"
+        )
+
+    book = db.relationship('Item', backref=db.backref('borrow_transactions', uselist=False))
 
 
 # Fine Table
