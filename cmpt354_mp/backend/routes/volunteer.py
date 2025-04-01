@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from models import Volunteer, db
 from sqlalchemy.exc import IntegrityError
+from datetime import date
 
 volunteer_bp = Blueprint('volunteer', __name__, url_prefix='/volunteers')
 
@@ -112,3 +113,32 @@ def delete_volunteer(volunteer_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({"message": str(e)}), 500
+
+
+# Populate the Volunteer table
+@volunteer_bp.route('/populate', methods=['POST'])
+def populate_volunteer():
+    try:
+        volunteer_data = [
+            {"volunteer_id": 1, "role": "Event Coordinator", "start_date": date(2025, 1, 10), "end_date": date(2025, 5, 10)},
+            {"volunteer_id": 2, "role": "Mentor", "start_date": date(2025, 2, 1), "end_date": date(2025, 6, 1)},
+            {"volunteer_id": 3, "role": "Workshop Leader", "start_date": date(2025, 3, 15), "end_date": date(2025, 7, 15)},
+            {"volunteer_id": 4, "role": "Event Coordinator", "start_date": date(2025, 4, 1), "end_date": None},  # Ongoing volunteer
+            {"volunteer_id": 5, "role": "Admin Assistant", "start_date": date(2025, 1, 20), "end_date": date(2025, 5, 20)},
+            {"volunteer_id": 6, "role": "Marketing Assistant", "start_date": date(2025, 2, 10), "end_date": date(2025, 6, 10)},
+            {"volunteer_id": 7, "role": "Volunteer Trainer", "start_date": date(2025, 3, 5), "end_date": date(2025, 7, 5)},
+            {"volunteer_id": 8, "role": "Event Coordinator", "start_date": date(2025, 4, 10), "end_date": None},  # Ongoing volunteer
+            {"volunteer_id": 9, "role": "Workshop Leader", "start_date": date(2025, 5, 1), "end_date": date(2025, 9, 1)},
+            {"volunteer_id": 10, "role": "Admin Assistant", "start_date": date(2025, 6, 1), "end_date": date(2025, 10, 1)}
+        ]
+        
+        for volunteer_data in volunteer_data:
+            volunteer = Volunteer(**volunteer_data)
+            db.session.add(volunteer)
+
+        db.session.commit()
+        return jsonify({"message": "Volunteer populated successfully"}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": "Failed to populate Volunteer", "error": str(e)}), 500
+

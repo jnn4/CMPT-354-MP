@@ -26,6 +26,13 @@ function Login() {
             
             if (response.status === 200) {
                 console.log('Login successful', data);
+
+                // Store user info in localStorage
+                localStorage.setItem('loggedInUser', JSON.stringify({
+                    name: data.name,  // Now storing the name
+                    email: data.email
+                }));
+                
                 window.location.href = '/userHome';
             } else {
                 // Show error message if login fails

@@ -1,79 +1,87 @@
 from flask import Blueprint, jsonify, request
-from models import db
+from models import db, Item
 
 items_bp = Blueprint('items', __name__)
 
-# Get all books
-@items_bp.route('/books', methods=['GET'])
-def get_books():
-    books = Book.query.all()
-    books_data = [
+# Get all items
+@items_bp.route('/', methods=['GET'])
+def get_items():
+    items = Item.query.all()
+    items_data = [
         {
-            "id": book.id,
-            "title": book.title,
-            "author": book.author,
-            "year_published": book.year_published,
-            "borrowed": book.borrowed
+            "id": items.item_id,
+            "title": items.title,
+            "author": items.author,
+            "year_published": items.pub_year,
+            "borrowed": items.status,
+            "type": items.type
         }
-        for book in books
+        for items in items
     ]
-    return jsonify(books_data)
+    return jsonify(items_data), 200
 
-# Populate the database with a set of books
-@items_bp.route('/books/populate_books', methods=['POST'])
-def populate_books():
+# Populate the database with a set of items
+@items_bp.route('/populate_items', methods=['POST'])
+def populate_items():
     try:
-        books_data = [
-            {"title": "The Great Gatsby", "author": "F. Scott Fitzgerald", "year_published": 1925, "borrowed": False},
-            {"title": "1984", "author": "George Orwell", "year_published": 1949, "borrowed": False},
-            {"title": "Moby Dick", "author": "Herman Melville", "year_published": 1851, "borrowed": False},
-            {"title": "To Kill a Mockingbird", "author": "Harper Lee", "year_published": 1960, "borrowed": False},
+        items_data = [
+            {"title": "The Catcher in the Rye", "author": "J.D. Salinger", "pub_year": 1951, "status": "available", "type": "book"},
+            {"title": "Abbey Road", "author": "The Beatles", "pub_year": 1969, "status": "borrowed", "type": "cd"},
+            {"title": "National Geographic - Space Edition", "author": "National Geographic", "pub_year": 2023, "status": "available", "type": "magazine"},
+            {"title": "To Kill a Mockingbird", "author": "Harper Lee", "pub_year": 1960, "status": "available", "type": "book"},
+            {"title": "The Godfather", "author": "Mario Puzo", "pub_year": 1969, "status": "borrowed", "type": "book"},
+            {"title": "Dark Side of the Moon", "author": "Pink Floyd", "pub_year": 1973, "status": "available", "type": "cd"},
+            {"title": "Time Magazine - AI Issue", "author": "Time Magazine", "pub_year": 2024, "status": "available", "type": "magazine"},
+            {"title": "1984", "author": "George Orwell", "pub_year": 1949, "status": "borrowed", "type": "book"},
+            {"title": "The Subtle Art of Not Giving a F*ck", "author": "Mark Manson", "pub_year": 2016, "status": "available", "type": "book"},
+            {"title": "The Rolling Stones - Greatest Hits", "author": "The Rolling Stones", "pub_year": 2002, "status": "borrowed", "type": "cd"}
         ]
 
-        for book_data in books_data:
-            book = Book(**book_data)
-            db.session.add(book)
+
+        for items_data in items_data:
+            item = Item(**items_data)
+            db.session.add(item)
         
         db.session.commit()
-        return jsonify({"message": "Books populated successfully"}), 200
+        return jsonify({"message": "Items populated successfully"}), 200
     
     except Exception as e:
         db.session.rollback()
         print(f"Error: {e}")  # Logs the error in your terminal
-        return jsonify({"message": "Failed to populate books", "error": str(e)}), 500
+        return jsonify({"message": "Failed to populate Items", "error": str(e)}), 500
 
-# Borrow a book by its ID
-@items_bp.route('/books/borrow/<int:id>', methods=['PATCH'])
-def borrow_book(id):
-    book = Book.query.get(id)
-    if not book:
-        return jsonify({"message": "Book not found"}), 404
+# Borrow a Item by its ID
+@items_bp.route('/items/borrow/<int:id>', methods=['PATCH'])
+def borrow_item(id):
+    item = Item.query.get(id)
+    if not item:
+        return jsonify({"message": "Item not found"}), 404
 
-    if book.borrowed:
-        return jsonify({"message": "This book is already borrowed"}), 400
+    if item.borrowed:
+        return jsonify({"message": "This item is already borrowed"}), 400
 
-    book.borrowed = True
+    item.borrowed = True
     db.session.commit()
 
     return jsonify({
-        "message": "Book borrowed successfully",
-        "book": {"id": book.id, "title": book.title}
+        "message": "Item borrowed successfully",
+        "item": {"id": item.id, "title": item.title}
     }), 200
 
-# Return a borrowed book by its ID
-@items_bp.route('/books/return/<int:id>', methods=['PATCH'])
-def return_book(id):
-    book = Book.query.get(id)
-    if not book:
-        return jsonify({"message": "Book not found"}), 404
+# Return a borrowed Item by its ID
+@items_bp.route('/item/return/<int:id>', methods=['PATCH'])
+def return_item(id):
+    item = Item.query.get(id)
+    if not item:
+        return jsonify({"message": "Item not found"}), 404
 
-    if not book.borrowed:
-        return jsonify({"message": "This book was not borrowed"}), 400
+    if not item.borrowed:
+        return jsonify({"message": "This item was not borrowed"}), 400
 
-    book.borrowed = False
+    item.borrowed = False
     db.session.commit()
 
     return jsonify({
-        "message": "Book returned successfully",
-        "book": {"id": book.id, "title": book.title}
+        "message": "Item returned successfully",
+        "Item": {"id": item.id, "title": item.title}
     }), 200

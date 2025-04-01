@@ -101,3 +101,32 @@ def delete_room(room_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({"message": str(e)}), 500
+    
+# Populate the room table
+@rooms_bp.route('/populate', methods=['POST'])
+def populate_room():
+    try:
+        room_data = [
+            {"room_id": 1, "name": "Room A", "capacity": 30},
+            {"room_id": 2, "name": "Room B", "capacity": 50},
+            {"room_id": 3, "name": "Room C", "capacity": 100},
+            {"room_id": 4, "name": "Room D", "capacity": 25},
+            {"room_id": 5, "name": "Room E", "capacity": 40},
+            {"room_id": 6, "name": "Room F", "capacity": 60},
+            {"room_id": 7, "name": "Room G", "capacity": 75},
+            {"room_id": 8, "name": "Room H", "capacity": 120},
+            {"room_id": 9, "name": "Room I", "capacity": 80},
+            {"room_id": 10, "name": "Room J", "capacity": 90}
+        ]
+
+        for room_data in room_data:
+            room = Room(**room_data)
+            db.session.add(room)
+
+        db.session.commit()
+        return jsonify({"message": "Room populated successfully"}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": "Failed to populate Room", "error": str(e)}), 500
+
+

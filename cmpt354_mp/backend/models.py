@@ -20,16 +20,17 @@ class Person(db.Model):
 class User(db.Model):
     __tablename__ = 'user'
 
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(100), unique=True, nullable=False)
-    email = db.Column(db.String(100), unique=True, nullable=False)
-
+    user_id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(100), db.ForeignKey('person.email'), unique=True, nullable=False)  # FK to Person
+    password = db.Column(db.String(255), nullable=False)  # Hashed password
+    
     # Relationship with Borrow Transactions
-    borrow_transactions = db.relationship('BorrowTransaction', backref='user', lazy=True)
+    BorrowTransaction = db.relationship('BorrowTransaction', backref='user', lazy=True)
 
-    def __init__(self, email, join_date):
+    def __init__(self, email, password, role='user'):
         self.email = email
-        self.join_date = join_date
+        self.password = password  # Store hashed password
+        self.role = role
 
 # Staff Table
 class Staff(db.Model):
@@ -39,6 +40,7 @@ class Staff(db.Model):
     email = db.Column(db.String(100), db.ForeignKey('person.email'), nullable=False, unique=True)
     position = db.Column(db.String(100), nullable=False)
     wage = db.Column(db.Float, nullable=True)
+    password = db.Column(db.String(255), nullable=False)  # Hashed password
 
 # Volunteer Table
 class Volunteer(db.Model):
@@ -104,10 +106,10 @@ class FutureItem(db.Model):
 class BorrowTransaction(db.Model):
     __tablename__ = 'borrow_transactions'
 
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))  # Reference to 'user' table
-    book_id = db.Column(db.Integer, db.ForeignKey('item.id'))  # Reference to 'item' table
-    borrowed_at = db.Column(db.DateTime, default=datetime.utcnow)
+    trans_id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'))  # Reference to 'user' table
+    item_id = db.Column(db.Integer, db.ForeignKey('item.item_id'))  # Reference to 'item' table
+    borrowed_at = db.Column(db.DateTime, default=datetime)
 
     user = db.relationship('User', backref='borrow_transactions')
     book = db.relationship('Item', backref='borrow_transactions')
@@ -115,12 +117,12 @@ class BorrowTransaction(db.Model):
 
 # Fine Table
 class Fines(db.Model):
-    __tablename__ = 'fine'
+    __tablename__ = 'fines'
     
     fine_id = db.Column(db.Integer, primary_key=True)
     amount = db.Column(db.Float, nullable=False)
     paid = db.Column(db.Boolean, default=False)
-    trans_id = db.Column(db.Integer, db.ForeignKey('borrow_transaction.trans_id'), nullable=False)
+    trans_id = db.Column(db.Integer, db.ForeignKey('borrow_transactions.trans_id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'), nullable=False)
 
 # Requests Help Table
@@ -183,19 +185,19 @@ donates = db.Table('donates',
 # User creates Borrow Transaction
 creates = db.Table('creates',
     db.Column('user_id', db.Integer, db.ForeignKey('user.user_id'), primary_key=True),
-    db.Column('trans_id', db.Integer, db.ForeignKey('borrow_transaction.trans_id'), primary_key=True)
+    db.Column('trans_id', db.Integer, db.ForeignKey('borrow_transactions.trans_id'), primary_key=True)
 )
 
 # Borrow Transaction borrows Item
 borrows = db.Table('borrows',
     db.Column('item_id', db.Integer, db.ForeignKey('item.item_id'), primary_key=True),
-    db.Column('trans_id', db.Integer, db.ForeignKey('borrow_transaction.trans_id'), primary_key=True)
+    db.Column('trans_id', db.Integer, db.ForeignKey('borrow_transactions.trans_id'), primary_key=True)
 )
 
 # Borrow Transaction has Fine when past due
 is_due = db.Table('is_due',
-    db.Column('trans_id', db.Integer, db.ForeignKey('borrow_transaction.trans_id'), primary_key=True),
-    db.Column('fine_id', db.Integer, db.ForeignKey('fine.fine_id'), primary_key=True)
+    db.Column('trans_id', db.Integer, db.ForeignKey('borrow_transactions.trans_id'), primary_key=True),
+    db.Column('fine_id', db.Integer, db.ForeignKey('fines.fine_id'), primary_key=True)
 )
 
 # # Book model

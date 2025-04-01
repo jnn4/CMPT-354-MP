@@ -2,56 +2,72 @@ import React, { useEffect, useState } from 'react';
 import '../app.css';
 
 function Items() {
-  const [books, setBooks] = useState([]);
+  const [items, setItem] = useState([]);
   const [searchText, setSearchText] = useState('');
+  const [itemsPopulated, setItemPopulated] = useState(false);
 
   useEffect(() => {
     // Fetch books only once when the component mounts
-    fetch("http://localhost:8000/items/books")
+    fetch("http://localhost:8000/items/")
       .then((response) => response.json())
-      .then((data) => setBooks(data))
-      .catch((error) => console.error("Error fetching books:", error));
+      .then((data) => setItems(data))
+      .catch((error) => console.error("Error fetching items:", error));
   }, []); // Empty dependency array ensures this only runs once after the component mounts
 
   // Function to populate books in the database (this will only run once, e.g., for testing)
-const [booksPopulated, setBooksPopulated] = useState(false);
 
-const populateBooks = () => {
-  if (booksPopulated) return; // Prevents re-population if already done
+const populateItems = () => {
+  if (itemsPopulated) return; // Prevents re-population if already done
 
-  fetch('http://localhost:8000/items/books/populate_books', {
+  fetch('http://localhost:8000/items/populate_items', {
     method: 'POST',
   })
     .then(response => response.json())
     .then(data => {
-      console.log("Books populated:", data);
-      setBooksPopulated(true);
+      console.log("Items populated:", data);
+      setItemsPopulated(true);
     })
-    .catch(error => console.error('Error populating books:', error));
+    .catch(error => console.error('Error populating items:', error));
 };
 
-  // Function to filter books based on search text
-  const filteredBooks = books.filter(
-    (book) =>
-      book.title.toLowerCase().includes(searchText.toLowerCase()) ||
-      book.author.toLowerCase().includes(searchText.toLowerCase()) ||
-      (book.year_published && book.year_published.toString().includes(searchText))
+  // Function to filter items based on search text
+  const filteredItems = items.filter(
+    (item) =>
+      item.title.toLowerCase().includes(searchText.toLowerCase()) ||
+      item.author.toLowerCase().includes(searchText.toLowerCase()) ||
+      (item.year_published && item.year_published.toString().includes(searchText))
   );
 
-  // Function that handles book borrowing
-  const handleBorrowBook = (bookId) => {
-    fetch(`http://localhost:8000/items/books/borrow/${bookId}`, { method: 'PATCH' })
+  // Function that handles item borrowing
+  const handleBorrowItem = (itemId) => {
+    fetch(`http://localhost:8000/items/borrow/${itemId}`, { method: 'PATCH' })
       .then(response => response.json())
       .then(data => {
-        if (data.message === "Book borrowed successfully") {
-          // Update state to reflect borrowed book
-          setBooks(books.map(book =>
-            book.id === bookId ? { ...book, borrowed: true } : book
+        if (data.message === "Item borrowed successfully") {
+          // Update state to reflect borrowed item
+          setItems(items.map(item =>
+            item.id === itemId ? { ...item, borrowed: true } : item
           ));
         }
       })
-      .catch(error => console.error('Error borrowing book:', error));
-  };  
+      .catch(error => console.error('Error borrowing item:', error));
+  };
+
+  // Function that handles item return
+  const handleReturnItem = (itemId) => {
+    fetch(`http://localhost:8000/items/return/${itemId}`, { method: 'PATCH' })
+      .then(response => response.json())
+      .then(data => {
+        if (data.message === "Item returned successfully") {
+          // Update state to reflect returned item
+          setItems(items.map(item =>
+            item.id === itemId ? { ...item, borrowed: false } : item
+          ));
+        }
+      })
+      .catch(error => console.error('Error returning item:', error));
+  };
+
 
   return (
     <div className="content">
@@ -74,27 +90,27 @@ const populateBooks = () => {
       />
 
       <ul className="items">
-        {filteredBooks.map((book) => (
-          <li className="items" key={book.id}>
-            {book.title} by {book.author} ({book.year_published})
-            {book.borrowed ? (
-              <button className="items" disabled>
-                Borrowed
+      {filteredItems.map((item) => (
+          <li className="items" key={item.id}>
+            {item.title} by {item.author} ({item.year_published})
+            {item.borrowed ? (
+              <button className="items" onClick={() => handleReturnItem(item.id)}>
+                Return
               </button>
             ) : (
-              <button className="items" onClick={() => handleBorrowBook(book.id)}>
-                Available
+              <button className="items" onClick={() => handleBorrowItem(item.id)}>
+                Borrow
               </button>
             )}
           </li>
         ))}
-        {filteredBooks.length === 0 && searchText && (
+        {filteredItems.length === 0 && searchText && (
           <li className="items">No results found</li>
         )}
       </ul>
 
-      {/* Optional: Button to populate books (just for testing) */}
-      <button onClick={populateBooks} className="items">Populate Books</button>
+      {/* Optional: Button to populate items (just for testing) */}
+      <button onClick={populateItems} className="items">Populate Items</button>
     </div>
   );
 }

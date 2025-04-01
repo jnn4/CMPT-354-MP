@@ -1,6 +1,7 @@
 from flask import Flask
 from flask_cors import CORS
 from extensions import db  # Import db from extensions
+from models import Person, User, Staff, Volunteer, Room, Event, Audience, Item, FutureItem, BorrowTransaction, Fines, RequestHelp
 
 
 # Initialize Flask app
@@ -38,6 +39,7 @@ from routes.future_items import future_items_bp
 from routes.fines import fines_bp
 from routes.person import person_bp
 from routes.volunteer import volunteer_bp
+from routes.audience import audience_bp
 
 # Register blueprints (/routes)
 app.register_blueprint(auth_bp, url_prefix='/auth')
@@ -54,6 +56,7 @@ app.register_blueprint(future_items_bp, url_prefix='/future_items')
 app.register_blueprint(volunteer_bp, url_prefix='/volunteer')
 app.register_blueprint(fines_bp, url_prefix='/fines')
 app.register_blueprint(person_bp, url_prefix='/person')
+app.register_blueprint(audience_bp, url_prefix='/audience')
 
 
 

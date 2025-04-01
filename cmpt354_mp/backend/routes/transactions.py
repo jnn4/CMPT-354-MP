@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from models import BorrowTransaction, User, Item, db
+from datetime import datetime
 
 transactions_bp = Blueprint('transactions', __name__, url_prefix='/transactions')
 
@@ -128,3 +129,30 @@ def delete_transaction(trans_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({"message": str(e)}), 500
+    
+# Populate the transaction table
+@transactions_bp.route('/populate', methods=['POST'])
+def populate_transactions():
+    try:
+        transaction_data = [
+            {"id": 1, "user_id": 1, "book_id": 1, "borrowed_at": datetime(2025, 4, 1, 10, 0, 0)},
+            {"id": 2, "user_id": 2, "book_id": 2, "borrowed_at": datetime(2025, 4, 2, 11, 30, 0)},
+            {"id": 3, "user_id": 3, "book_id": 3, "borrowed_at": datetime(2025, 4, 3, 9, 15, 0)},
+            {"id": 4, "user_id": 4, "book_id": 4, "borrowed_at": datetime(2025, 4, 4, 14, 45, 0)},
+            {"id": 5, "user_id": 5, "book_id": 5, "borrowed_at": datetime(2025, 4, 5, 13, 0, 0)},
+            {"id": 6, "user_id": 6, "book_id": 6, "borrowed_at": datetime(2025, 4, 6, 16, 30, 0)},
+            {"id": 7, "user_id": 7, "book_id": 7, "borrowed_at": datetime(2025, 4, 7, 10, 0, 0)},
+            {"id": 8, "user_id": 8, "book_id": 8, "borrowed_at": datetime(2025, 4, 8, 17, 15, 0)},
+            {"id": 9, "user_id": 9, "book_id": 9, "borrowed_at": datetime(2025, 4, 9, 11, 30, 0)},
+            {"id": 10, "user_id": 10, "book_id": 10, "borrowed_at": datetime(2025, 4, 10, 14, 45, 0)}
+        ]
+
+        for transaction_data in transaction_data:
+            transaction = BorrowTransaction(**transaction_data)
+            db.session.add(transaction)
+
+        db.session.commit()
+        return jsonify({"message": "Transaction populated successfully"}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": "Failed to populate transaction", "error": str(e)}), 500

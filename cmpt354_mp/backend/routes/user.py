@@ -77,7 +77,7 @@ def login_user():
         return jsonify({"message": str(e)}), 500
 
 # Get user by ID
-@user_bp.route('/<int:user_id>', methods=['GET'])
+@user_bp.route('/user/<int:user_id>', methods=['GET'])
 def get_user_by_id(user_id):
     try:
         user = User.query.get(user_id)
@@ -95,7 +95,7 @@ def get_user_by_id(user_id):
         return jsonify({"message": str(e)}), 500
 
 # Update user details
-@user_bp.route('/<int:user_id>', methods=['PUT'])
+@user_bp.route('/user/<int:user_id>', methods=['PUT'])
 def update_user(user_id):
     try:
         data = request.get_json()
@@ -134,7 +134,7 @@ def update_user(user_id):
         return jsonify({"message": str(e)}), 500
 
 # Delete user by ID
-@user_bp.route('/<int:user_id>', methods=['DELETE'])
+@user_bp.route('/user/<int:user_id>', methods=['DELETE'])
 def delete_user(user_id):
     try:
         user = User.query.get(user_id)
@@ -150,3 +150,30 @@ def delete_user(user_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({"message": str(e)}), 500
+
+# Populate the database with users
+@user_bp.route('/user/populate_user', methods=['POST'])
+def populate_user():
+    try:
+        user_data = [
+            {"user_id": 1, "email": "alice@example.com", "password": generate_password_hash("password123")},
+            {"user_id": 2, "email": "bob@example.com", "password": generate_password_hash("securePass1")},
+            {"user_id": 3, "email": "charlie@example.com", "password": generate_password_hash("helloWorld!")},
+            {"user_id": 4, "email": "dave@example.com", "password": generate_password_hash("myPassword42")},
+            {"user_id": 5, "email": "eve@example.com", "password": generate_password_hash("superSecret")},
+            {"user_id": 6, "email": "frank@example.com", "password": generate_password_hash("passw0rd!")},
+            {"user_id": 7, "email": "grace@example.com", "password": generate_password_hash("admin123")},
+            {"user_id": 8, "email": "heidi@example.com", "password": generate_password_hash("letMeIn!")},
+            {"user_id": 9, "email": "ivan@example.com", "password": generate_password_hash("qwerty987")},
+            {"user_id": 10, "email": "judy@example.com", "password": generate_password_hash("trustNo1!")}
+        ]
+
+        for user_data in user_data:
+            user = User(**user_data)
+            db.session.add(user)
+
+        db.session.commit();
+        return jsonify({"message": "User populated successfully"}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": "Failed to populate users", "error": str(e)}), 500
