@@ -1,19 +1,25 @@
-from flask import Flask, Blueprint, jsonify
-from flask_cors import CORS
-from flask_sqlalchemy import SQLAlchemy
-from models import Book
-from app import db  # Import db from app.py
+from flask import Blueprint, jsonify, request
+from models import db
 
 items_bp = Blueprint('items', __name__)
 
+# Get all books
 @items_bp.route('/books', methods=['GET'])
 def get_books():
     books = Book.query.all()
-    books_data = [{"id": book.id, "title": book.title, "author": book.author,
-                   "year_published": book.year_published, "borrowed": book.borrowed}
-                  for book in books]
+    books_data = [
+        {
+            "id": book.id,
+            "title": book.title,
+            "author": book.author,
+            "year_published": book.year_published,
+            "borrowed": book.borrowed
+        }
+        for book in books
+    ]
     return jsonify(books_data)
 
+# Populate the database with a set of books
 @items_bp.route('/books/populate_books', methods=['POST'])
 def populate_books():
     try:
@@ -32,9 +38,11 @@ def populate_books():
         return jsonify({"message": "Books populated successfully"}), 200
     
     except Exception as e:
+        db.session.rollback()
         print(f"Error: {e}")  # Logs the error in your terminal
         return jsonify({"message": "Failed to populate books", "error": str(e)}), 500
 
+# Borrow a book by its ID
 @items_bp.route('/books/borrow/<int:id>', methods=['PATCH'])
 def borrow_book(id):
     book = Book.query.get(id)
@@ -47,4 +55,25 @@ def borrow_book(id):
     book.borrowed = True
     db.session.commit()
 
-    return jsonify({"message": "Book borrowed successfully", "book": {"id": book.id, "title": book.title}}), 200
+    return jsonify({
+        "message": "Book borrowed successfully",
+        "book": {"id": book.id, "title": book.title}
+    }), 200
+
+# Return a borrowed book by its ID
+@items_bp.route('/books/return/<int:id>', methods=['PATCH'])
+def return_book(id):
+    book = Book.query.get(id)
+    if not book:
+        return jsonify({"message": "Book not found"}), 404
+
+    if not book.borrowed:
+        return jsonify({"message": "This book was not borrowed"}), 400
+
+    book.borrowed = False
+    db.session.commit()
+
+    return jsonify({
+        "message": "Book returned successfully",
+        "book": {"id": book.id, "title": book.title}
+    }), 200

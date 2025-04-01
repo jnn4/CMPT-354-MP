@@ -44,7 +44,12 @@ def login():
     if not user or not check_password_hash(user.password_hash, data['password']):
         return jsonify({'message': 'Invalid credentials'}), 401
 
-    return jsonify({'message': 'Login successful', 'role': user.role}), 200
+    return jsonify({
+        'message': 'Login successful',
+        'name': user.name,  # Add name here
+        'email': user.email,
+        'role': user.role
+    }), 200
 
 @auth_bp.route('/login', methods=['OPTIONS'])
 def options_login():

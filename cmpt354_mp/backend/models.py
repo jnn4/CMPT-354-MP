@@ -1,48 +1,234 @@
 from extensions import db
+from datetime import datetime
+
+# Person Table
+class Person(db.Model):
+    __tablename__ = 'person'
+    
+    email = db.Column(db.String(100), primary_key=True)  # Unique identifier
+    first_name = db.Column(db.String(100), nullable=False)
+    last_name = db.Column(db.String(100), nullable=False)
+    phone_num = db.Column(db.String(20), nullable=True)
+    age = db.Column(db.Integer, nullable=True)
+
+    user = db.relationship('User', backref='person', uselist=False)
+    staff = db.relationship('Staff', backref='person', uselist=False)
+
+
 
 # User model
-
 class User(db.Model):
-    __tablename__ = 'users'
-    
-    user_id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    email = db.Column(db.String(100), nullable=False, unique=True)
-    password_hash = db.Column(db.String(255), nullable=False)  # Field for hashed password
-    role = db.Column(db.String(50), nullable=False)
+    __tablename__ = 'user'
 
-    def __init__(self, name, email, password_hash, role): # might be able to delete this later!
-        self.name = name
-        self.email = email
-        self.password_hash = password_hash
-        self.role = role
-
-    books = db.relationship('Book', backref='user', lazy=True)
-
-
-# Book model
-class Book(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(100), unique=True, nullable=False)
+    email = db.Column(db.String(100), unique=True, nullable=False)
+
+    # Relationship with Borrow Transactions
+    borrow_transactions = db.relationship('BorrowTransaction', backref='user', lazy=True)
+
+    def __init__(self, email, join_date):
+        self.email = email
+        self.join_date = join_date
+
+# Staff Table
+class Staff(db.Model):
+    __tablename__ = 'staff'
+    
+    staff_id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(100), db.ForeignKey('person.email'), nullable=False, unique=True)
+    position = db.Column(db.String(100), nullable=False)
+    wage = db.Column(db.Float, nullable=True)
+
+# Volunteer Table
+class Volunteer(db.Model):
+    __tablename__ = 'volunteer'
+    
+    volunteer_id = db.Column(db.Integer, db.ForeignKey('staff.staff_id'), primary_key=True)
+    role = db.Column(db.String(100), nullable=False)
+    start_date = db.Column(db.Date, nullable=False)
+    end_date = db.Column(db.Date, nullable=True)
+
+# Room Table
+class Room(db.Model):
+    __tablename__ = 'room'
+    
+    room_id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False, unique=True)
+    capacity = db.Column(db.Integer, nullable=False)
+
+# Event Table
+class Event(db.Model):
+    __tablename__ = 'event'
+    
+    event_id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    event_type = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    date = db.Column(db.Date, nullable=False)
+    time = db.Column(db.Time, nullable=False)
+    room_id = db.Column(db.Integer, db.ForeignKey('room.room_id'), nullable=True)
+
+    room = db.relationship('Room', backref='events')
+
+# Audience Table
+class Audience(db.Model):
+    __tablename__ = 'audience'
+    
+    aud_id = db.Column(db.Integer, primary_key=True)
+    min_age = db.Column(db.Integer, nullable=False)
+    max_age = db.Column(db.Integer, nullable=False)
+    type = db.Column(db.String(100), nullable=False)
+    event_id = db.Column(db.Integer, db.ForeignKey('event.event_id'), nullable=False)
+
+# Item Table
+class Item(db.Model):
+    __tablename__ = 'item'
+    
+    item_id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
     author = db.Column(db.String(100), nullable=False)
-    year_published = db.Column(db.Integer, nullable=True)
-    borrowed = db.Column(db.Boolean, default=False)
+    pub_year = db.Column(db.Integer, nullable=True)
+    status = db.Column(db.String(50), nullable=False)
+    type = db.Column(db.String(50), nullable=False)
 
-    # Foreign key to the User model (many-to-one relationship)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=True)
+# Future Item Table
+class FutureItem(db.Model):
+    __tablename__ = 'future_item'
     
-    # You can add a backref to access the User who borrowed the book
-    # user = db.relationship('User', backref=db.backref('borrowed_books', lazy=True))
+    future_item_id = db.Column(db.Integer, primary_key=True)
+    item_id = db.Column(db.Integer, db.ForeignKey('item.item_id'), nullable=False, unique=True)
+    arrival_date = db.Column(db.Date, nullable=False)
+    
+# Borrow Transaction Table
+class BorrowTransaction(db.Model):
+    __tablename__ = 'borrow_transactions'
 
-# Commented out for now! easier for debugging
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))  # Reference to 'user' table
+    book_id = db.Column(db.Integer, db.ForeignKey('item.id'))  # Reference to 'item' table
+    borrowed_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-# # Event model
-# class Events(db.Model):
+    user = db.relationship('User', backref='borrow_transactions')
+    book = db.relationship('Item', backref='borrow_transactions')
+
+
+# Fine Table
+class Fines(db.Model):
+    __tablename__ = 'fine'
+    
+    fine_id = db.Column(db.Integer, primary_key=True)
+    amount = db.Column(db.Float, nullable=False)
+    paid = db.Column(db.Boolean, default=False)
+    trans_id = db.Column(db.Integer, db.ForeignKey('borrow_transaction.trans_id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'), nullable=False)
+
+# Requests Help Table
+class RequestHelp(db.Model):
+    __tablename__ = 'request_help'
+    
+    request_help_id = db.Column(db.Integer, primary_key=True)
+    request_text = db.Column(db.Text, nullable=False)
+    response_text = db.Column(db.Text, nullable=True)
+    status = db.Column(db.String(50), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'), nullable=False)
+    staff_id = db.Column(db.Integer, db.ForeignKey('staff.staff_id'), nullable=False)
+
+# User attends Event (with attendance status and registration date)
+attends = db.Table('attends',
+    db.Column('user_id', db.Integer, db.ForeignKey('user.user_id'), primary_key=True),
+    db.Column('event_id', db.Integer, db.ForeignKey('event.event_id'), primary_key=True),
+    db.Column('attendance_status', db.String(50), nullable=False),
+    db.Column('registration_date', db.Date, nullable=False)
+)
+
+# Event recommended to Audience
+recommended = db.Table('recommended',
+    db.Column('aud_id', db.Integer, db.ForeignKey('audience.aud_id'), primary_key=True),
+    db.Column('event_id', db.Integer, db.ForeignKey('event.event_id'), primary_key=True)
+)
+
+# Event held in Room
+held_in = db.Table('held_in',
+    db.Column('room_id', db.Integer, db.ForeignKey('room.room_id'), primary_key=True),
+    db.Column('event_id', db.Integer, db.ForeignKey('event.event_id'), primary_key=True)
+)
+
+# Event managed by Staff
+manages = db.Table('manages',
+    db.Column('staff_id', db.Integer, db.ForeignKey('staff.staff_id'), primary_key=True),
+    db.Column('event_id', db.Integer, db.ForeignKey('event.event_id'), primary_key=True)
+)
+
+# Volunteer assists Staff
+assists = db.Table('assists',
+    db.Column('staff_id', db.Integer, db.ForeignKey('staff.staff_id'), primary_key=True),
+    db.Column('volunteer_id', db.Integer, db.ForeignKey('volunteer.volunteer_id'), primary_key=True)
+)
+
+# User requests help from Staff
+requests = db.Table('requests',
+    db.Column('staff_id', db.Integer, db.ForeignKey('staff.staff_id'), primary_key=True),
+    db.Column('user_id', db.Integer, db.ForeignKey('user.user_id'), primary_key=True)
+)
+
+# User donates Item
+donates = db.Table('donates',
+    db.Column('user_id', db.Integer, db.ForeignKey('user.user_id'), primary_key=True),
+    db.Column('item_id', db.Integer, db.ForeignKey('item.item_id'), primary_key=True),
+    db.Column('donation_status', db.String(50), nullable=False),
+    db.Column('donation_date', db.Date, nullable=False)
+)
+
+# User creates Borrow Transaction
+creates = db.Table('creates',
+    db.Column('user_id', db.Integer, db.ForeignKey('user.user_id'), primary_key=True),
+    db.Column('trans_id', db.Integer, db.ForeignKey('borrow_transaction.trans_id'), primary_key=True)
+)
+
+# Borrow Transaction borrows Item
+borrows = db.Table('borrows',
+    db.Column('item_id', db.Integer, db.ForeignKey('item.item_id'), primary_key=True),
+    db.Column('trans_id', db.Integer, db.ForeignKey('borrow_transaction.trans_id'), primary_key=True)
+)
+
+# Borrow Transaction has Fine when past due
+is_due = db.Table('is_due',
+    db.Column('trans_id', db.Integer, db.ForeignKey('borrow_transaction.trans_id'), primary_key=True),
+    db.Column('fine_id', db.Integer, db.ForeignKey('fine.fine_id'), primary_key=True)
+)
+
+# # Book model
+# class Book(db.Model):
 #     id = db.Column(db.Integer, primary_key=True)
 #     title = db.Column(db.String(100), nullable=False)
-#     description = db.Column(db.String(200), nullable=False)
-#     date = db.Column(db.String(50), nullable=False)
-#     rsvp = db.Column(db.Boolean, default=False)
+#     author = db.Column(db.String(100), nullable=False)
+#     year_published = db.Column(db.Integer, nullable=True)
+#     borrowed = db.Column(db.Boolean, default=False)
+
+#     # Foreign key to the User model (many-to-one relationship)
+#     user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=True)
+    
+#     # You can add a backref to access the User who borrowed the book
+#     # user = db.relationship('User', backref=db.backref('borrowed_books', lazy=True))
+
+# # Commented out for now! easier for debugging
+
+# # # Event model
+# class Event(db.Model):
+#     event_id = db.Column(db.Integer, primary_key=True)
+#     title = db.Column(db.String(100), nullable=False)
+#     description = db.Column(db.String(500), nullable=False)
+#     date = db.Column(db.DateTime, nullable=False)
+
+#     attendees = db.relationship('User', secondary='event_attendance', back_populates='events')
+
+# # Many-to-Many relationship for event attendance
+# event_attendance = db.Table(
+#     'event_attendance',
+#     db.Column('user_id', db.Integer, db.ForeignKey('users.user_id'), primary_key=True),
+#     db.Column('event_id', db.Integer, db.ForeignKey('event.id'), primary_key=True)
+# )
 
 # # Staff model
 # class Staff(db.Model):
