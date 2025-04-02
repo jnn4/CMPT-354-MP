@@ -83,7 +83,7 @@ function Events() {
                         <p>Type: {event.type}</p>
                         <p>Date: {new Date(event.date).toLocaleDateString()}</p>
                         <p>Time: {event.time}</p>
-                        <p>Audience: {event.audience_type} ({event.min_age}-{event.max_age} years)</p>
+                        <p>Audience: {event.audience_type}</p>
                         <button onClick={() => handleAttendEvent(event.event_id)}>Attend</button>
                     </div>
                 ))}

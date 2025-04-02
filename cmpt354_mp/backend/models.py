@@ -34,7 +34,6 @@ class Staff(db.Model):
     
     # Relationships
     person = db.relationship('Person', backref=db.backref('staff', uselist=False))
-    managed_events = db.relationship('Event', secondary='manages', backref='managers')
 
 class Volunteer(db.Model):
     __tablename__ = 'volunteer'
@@ -49,7 +48,7 @@ class Volunteer(db.Model):
     )
     
     # Relationships
-    person = db.relationship('Person', backref=db.backref('volunteers', uselist=True))
+    person = db.relationship('Person', backref=db.backref('volunteers', uselist=True)) # fix relationship for user?
 
 # ----- Library Entities -----
 class Item(db.Model):
@@ -98,8 +97,6 @@ class Event(db.Model):
     date = db.Column(db.Date, nullable=False)
     time = db.Column(db.Time, nullable=False)
     room_id = db.Column(db.Integer, db.ForeignKey('room.room_id'), nullable=True)
-    min_age = db.Column(db.Integer, nullable=False)
-    max_age = db.Column(db.Integer, nullable=False)
     audience_type = db.Column(db.String(100), nullable=False)
     
     # Relationships
@@ -127,11 +124,6 @@ donates = db.Table('donates',
     db.Column('item_id', db.Integer, db.ForeignKey('item.item_id'), primary_key=True),
     db.Column('donation_status', db.String(50), nullable=False),
     db.Column('donation_date', db.Date, default=datetime.utcnow)
-)
-
-manages = db.Table('manages',
-    db.Column('staff_email', db.String(100), db.ForeignKey('staff.email'), primary_key=True),
-    db.Column('event_id', db.Integer, db.ForeignKey('event.event_id'), primary_key=True)
 )
 
 # ----- Help System -----

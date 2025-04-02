@@ -25,8 +25,6 @@ def get_events():
         'type': event.type,
         'date': event.date.isoformat(),
         'time': event.time.strftime('%H:%M'),
-        'min_age': event.min_age,
-        'max_age': event.max_age,
         'audience_type': event.audience_type
     } for event in events]), 200
 
@@ -97,8 +95,6 @@ def populate_events():
                 "date": "2025-05-15",
                 "time": "14:00",
                 "room_id": 1,  # Ensure this room exists in your database
-                "min_age": 16,
-                "max_age": 60,
                 "audience_type": "developers"
             },
             {
@@ -107,8 +103,6 @@ def populate_events():
                 "date": "2025-05-20",
                 "time": "18:30",
                 "room_id": 2,
-                "min_age": 18,
-                "max_age": 99,
                 "audience_type": "readers"
             },
             {
@@ -117,8 +111,6 @@ def populate_events():
                 "date": "2025-05-25",
                 "time": "10:00",
                 "room_id": 3,
-                "min_age": 18,
-                "max_age": 35,
                 "audience_type": "students"
             }
         ]
@@ -131,8 +123,6 @@ def populate_events():
                 date=datetime.strptime(event["date"], '%Y-%m-%d').date(),
                 time=datetime.strptime(event["time"], '%H:%M').time(),
                 room_id=event["room_id"],
-                min_age=event["min_age"],
-                max_age=event["max_age"],
                 audience_type=event["audience_type"]
             )
             db.session.add(new_event)

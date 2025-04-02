@@ -34,11 +34,9 @@ from routes.auth import auth_bp
 from routes.dashboard import dashboard_bp
 from routes.items import items_bp
 from routes.events import events_bp
-from routes.rooms import rooms_bp
 from routes.requests_help import requests_help_bp
 from routes.volunteer import volunteer_bp
 from routes.donate import donate_bp
-# from routes.fines import fines_bp
 
 # Register blueprints (/routes)
 app.register_blueprint(auth_bp, url_prefix='/auth')
@@ -46,11 +44,9 @@ app.register_blueprint(dashboard_bp)
 
 app.register_blueprint(items_bp, url_prefix='/items')
 app.register_blueprint(events_bp, url_prefix='/events')
-app.register_blueprint(rooms_bp, url_prefix='/rooms')
 app.register_blueprint(requests_help_bp, url_prefix='/requests_help')
 app.register_blueprint(volunteer_bp, url_prefix='/volunteer')
 app.register_blueprint(donate_bp, url_prefix='/donate')
-# app.register_blueprint(fines_bp, url_prefix='/fines')
 
 @app.cli.command("insert-test-data")
 def insert_test_data_command():
