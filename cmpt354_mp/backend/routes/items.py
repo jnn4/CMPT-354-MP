@@ -86,22 +86,38 @@ def handle_options():
 @items_bp.route('/return', methods=['POST'])
 def return_item():
     data = request.json
-    transaction = BorrowTransaction.query.filter_by(
-        item_id=data['item_id'],
-        user_email=data['user_email'],
-        return_date=None
-    ).first()
-
+    
+    # Validate input
+    if not data or 'item_id' not in data or 'user_email' not in data:
+        return jsonify({'message': 'Missing item_id or user_email'}), 400
+    
+    try:
+        item_id = int(data['item_id'])  # Ensure item_id is an integer
+    except ValueError:
+        return jsonify({'message': 'Invalid item_id format'}), 400
+    
+    user_email = data['user_email'].strip()  # Clean whitespace
+    
+    # Find active transaction
+    transaction = db.session.query(BorrowTransaction).\
+        filter(
+            BorrowTransaction.item_id == item_id,
+            BorrowTransaction.user_email == user_email,
+            BorrowTransaction.return_date.is_(None)
+        ).first()
+    
     if not transaction:
         return jsonify({'message': 'No active borrowing record found'}), 404
-
+    
     try:
-        # Update transaction
+        # Update transaction and item
         transaction.return_date = datetime.utcnow()
-        
-        # Update item status
         transaction.item.status = 'available'
         db.session.commit()
+        
+        # Refresh objects to get updated data
+        db.session.refresh(transaction)
+        db.session.refresh(transaction.item)
         
         return jsonify({
             'message': 'Item returned successfully',
@@ -113,8 +129,7 @@ def return_item():
                 'status': transaction.item.status
             }
         }), 200
-
     except Exception as e:
         db.session.rollback()
-        return jsonify({'message': str(e)}), 500
-
+        print(f"Error returning item: {e}")  # Log the error
+        return jsonify({'message': 'Failed to process return'}), 500

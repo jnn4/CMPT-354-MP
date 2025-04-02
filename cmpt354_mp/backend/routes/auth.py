@@ -86,27 +86,28 @@ def logout():
 def get_user_dashboard():
     email = request.args.get('email')
     
+    if not email:
+        return jsonify({'message': 'Email parameter is required'}), 400
+
     # Join Person and User tables
-    user_data = db.session.query(Person, User).\
-        join(User, Person.email == User.email).\
-        filter(Person.email == email).first()
+    user_data = db.session.query(Person, User).join(User, Person.email == User.email).filter(Person.email == email).first()
     
     if not user_data:
         return jsonify({'message': 'User not found'}), 404
     
     person, user = user_data
-    
+
     # Fetch borrowed items with a join
-    borrowed_items = db.session.query(Item, BorrowTransaction).\
-        join(BorrowTransaction, Item.item_id == BorrowTransaction.item_id).\
-        filter(BorrowTransaction.user_email == email).\
-        filter(BorrowTransaction.return_date == None).all()
+    borrowed_items = db.session.query(Item, BorrowTransaction).join(BorrowTransaction, Item.item_id == BorrowTransaction.item_id).filter(BorrowTransaction.user_email == email).filter(BorrowTransaction.return_date == None).all()
     
     items_list = [{
         'id': item.item_id,
         'title': item.title,
         'author': item.author,
-        'status': item.status
+        'pub_year': item.pub_year,
+        'status': item.status,
+        'borrow_date': transaction.borrow_date.strftime('%Y-%m-%d'),
+        'due_date': transaction.due_date.strftime('%Y-%m-%d')
     } for item, transaction in borrowed_items]
     
     return jsonify({
@@ -119,3 +120,4 @@ def get_user_dashboard():
         'upcomingEvents': [],  # Add event query here
         'volunteeringPosition': None  # Add volunteer query here
     }), 200
+
