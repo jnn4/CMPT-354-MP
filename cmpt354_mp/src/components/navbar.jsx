@@ -18,18 +18,14 @@ function Navbar() {
     const handleLogout = async () => {
         try {
             // Call logout endpoint
-            const response = await fetch('http://localhost:8000/auth/logout', {
+            const response = await fetch('http://localhost:8000/users/logout', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                },
-                credentials: 'include' // Include credentials for session handling
+                }
             });
             
-            if (!response.ok) {
-                throw new Error('Logout failed');
-            }
-            
+            // Even if the backend request fails, we'll still log out the user locally
             // Clear user data from localStorage
             localStorage.removeItem('loggedInUser');
             setUser(null);
@@ -38,7 +34,10 @@ function Navbar() {
             navigate('/login');
         } catch (error) {
             console.error('Error during logout:', error);
-            alert('Error during logout. Please try again.');
+            // Still log out the user locally even if the backend request fails
+            localStorage.removeItem('loggedInUser');
+            setUser(null);
+            navigate('/login');
         }
     };
 

@@ -39,7 +39,7 @@ function Login() {
                 }));
                 
                 // Navigate to home page
-                navigate('/');
+                navigate('/userHome');
             } else {
                 // Show error message if login fails
                 setErrorMessage(data.message || 'Invalid credentials');

@@ -151,6 +151,16 @@ def delete_user(user_id):
         db.session.rollback()
         return jsonify({"message": str(e)}), 500
 
+# User logout
+@user_bp.route('/logout', methods=['POST'])
+def logout_user():
+    try:
+        # For now, we'll just return a success message
+        # In a real application, you might want to invalidate the session token here
+        return jsonify({"message": "Logged out successfully"}), 200
+    except Exception as e:
+        return jsonify({"message": str(e)}), 500
+
 # Populate the database with users
 @user_bp.route('/user/populate_user', methods=['POST'])
 def populate_user():
