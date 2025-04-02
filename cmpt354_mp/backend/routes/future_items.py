@@ -11,21 +11,23 @@ def create_future_item():
         data = request.get_json()
 
         # Extract necessary data from the request
-        user_id = data.get('user_id')
-        item_name = data.get('item_name')
-        estimated_value = data.get('estimated_value')
-        status = data.get('status')
+        item_id = data.get('item_id')
+        arrival_date_str = data.get('arrival_date')
 
         # Validation
-        if not user_id or not item_name or not estimated_value or not status:
-            return jsonify({"message": "User ID, Item Name, Estimated Value, and Status are required!"}), 400
+        if not item_id or not arrival_date_str:
+            return jsonify({"message": "Item ID and arrival date are required!"}), 400
 
-        # Create a new future item (donation)
+        # Convert string date to Python date object
+        try:
+            arrival_date = date.fromisoformat(arrival_date_str)
+        except ValueError:
+            return jsonify({"message": "Invalid date format. Please use YYYY-MM-DD format."}), 400
+
+        # Create a new future item
         new_item = FutureItem(
-            user_id=user_id,
-            item_name=item_name,
-            estimated_value=estimated_value,
-            status=status
+            item_id=item_id,
+            arrival_date=arrival_date
         )
 
         db.session.add(new_item)
@@ -33,11 +35,9 @@ def create_future_item():
 
         return jsonify({
             "message": "Future item created successfully!",
-            "item_id": new_item.future_item_id,
-            "user_id": user_id,
-            "item_name": item_name,
-            "estimated_value": estimated_value,
-            "status": status
+            "future_item_id": new_item.future_item_id,
+            "item_id": item_id,
+            "arrival_date": arrival_date_str
         }), 201
 
     except Exception as e:

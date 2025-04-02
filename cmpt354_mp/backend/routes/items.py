@@ -3,6 +3,33 @@ from models import db, Item
 
 items_bp = Blueprint('items', __name__)
 
+# Create a new item
+@items_bp.route('/', methods=['POST'])
+def create_item():
+    try:
+        data = request.get_json()
+        
+        # Create new item
+        new_item = Item(
+            title=data['title'],
+            author=data['author'],
+            pub_year=data.get('pub_year'),
+            status=data['status'],
+            type=data['type']
+        )
+        
+        db.session.add(new_item)
+        db.session.commit()
+        
+        return jsonify({
+            "message": "Item created successfully",
+            "item_id": new_item.item_id
+        }), 201
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": "Failed to create item", "error": str(e)}), 500
+
 # Get all items
 @items_bp.route('/', methods=['GET'])
 def get_items():
