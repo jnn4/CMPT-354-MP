@@ -12,17 +12,6 @@ class Person(db.Model):
     age = db.Column(db.Integer)
 
 # ----- Person Subtypes -----
-# class User(db.Model):
-#     __tablename__ = 'user'
-#     email = db.Column(db.String(100), db.ForeignKey('person.email'), primary_key=True)
-    
-#     # Relationships
-#     person = db.relationship('Person', backref=db.backref('user', uselist=False))
-#     borrow_transactions = db.relationship('BorrowTransaction', backref='user')
-#     attended_events = db.relationship('Event', secondary='attends', backref='attendees')
-#     donated_items = db.relationship('Item', secondary='donates', backref='donors')
-
-
 class User(db.Model):
     __tablename__ = 'user'
     email = db.Column(db.String(100), db.ForeignKey('person.email'), primary_key=True)
