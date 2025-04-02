@@ -44,7 +44,7 @@ class Volunteer(db.Model):
     
     # Relationships
     person = db.relationship('Person', backref=db.backref('volunteer', uselist=False))
-    assisted_staff = db.relationship('Staff', secondary='assists', backref='assistants')
+    # assisted_staff = db.relationship('Staff', secondary='assists', backref='assistants')
 
 # ----- Library Entities -----
 class Item(db.Model):
@@ -120,10 +120,10 @@ manages = db.Table('manages',
     db.Column('event_id', db.Integer, db.ForeignKey('event.event_id'), primary_key=True)
 )
 
-assists = db.Table('assists',
-    db.Column('staff_email', db.String(100), db.ForeignKey('staff.email'), primary_key=True),
-    db.Column('volunteer_email', db.String(100), db.ForeignKey('volunteer.email'), primary_key=True)
-)
+# assists = db.Table('assists',
+#     db.Column('staff_email', db.String(100), db.ForeignKey('staff.email'), primary_key=True),
+#     db.Column('volunteer_email', db.String(100), db.ForeignKey('volunteer.email'), primary_key=True)
+# )
 
 # ----- Help System -----
 class RequestHelp(db.Model):

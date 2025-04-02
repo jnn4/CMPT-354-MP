@@ -1,3 +1,4 @@
+# auth.py handles the login, sign up, logout and dashboard updates.
 from flask import Blueprint, request, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from models import Person
@@ -5,6 +6,9 @@ from models import User
 from models import Staff
 from models import Item
 from models import BorrowTransaction
+from models import Event, attends
+from datetime import datetime
+
 
 from extensions import db
 from flask_cors import CORS  # Ensure CORS is imported
@@ -98,7 +102,11 @@ def get_user_dashboard():
     person, user = user_data
 
     # Fetch borrowed items with a join
-    borrowed_items = db.session.query(Item, BorrowTransaction).join(BorrowTransaction, Item.item_id == BorrowTransaction.item_id).filter(BorrowTransaction.user_email == email).filter(BorrowTransaction.return_date == None).all()
+    borrowed_items = db.session.query(Item, BorrowTransaction)\
+        .join(BorrowTransaction, Item.item_id == BorrowTransaction.item_id)\
+        .filter(BorrowTransaction.user_email == email)\
+        .filter(BorrowTransaction.return_date == None)\
+        .all()
     
     items_list = [{
         'id': item.item_id,
@@ -109,7 +117,24 @@ def get_user_dashboard():
         'borrow_date': transaction.borrow_date.strftime('%Y-%m-%d'),
         'due_date': transaction.due_date.strftime('%Y-%m-%d')
     } for item, transaction in borrowed_items]
+
+    # Fetch upcoming events with a join
+    upcoming_events = db.session.query(Event, attends.c.attendance_status)\
+        .join(attends, Event.event_id == attends.c.event_id)\
+        .filter(attends.c.user_email == email)\
+        .filter(Event.date >= datetime.utcnow().date())\
+        .all()
     
+    events_list = [{
+        'id': event.event_id,
+        'name': event.name,
+        'type': event.type,
+        'date': event.date.isoformat(),
+        'time': event.time.strftime('%H:%M'),
+        'status': status,
+        'location': event.room.name if event.room else 'Online'
+    } for event, status in upcoming_events]
+
     return jsonify({
         'user': {
             'firstName': person.first_name,
@@ -117,7 +142,7 @@ def get_user_dashboard():
             'email': person.email
         },
         'borrowedItems': items_list,
-        'upcomingEvents': [],  # Add event query here
-        'volunteeringPosition': None  # Add volunteer query here
+        'upcomingEvents': events_list,  # Now populated with actual data
+        'volunteeringPosition': None
     }), 200
 

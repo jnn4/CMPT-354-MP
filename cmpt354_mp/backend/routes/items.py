@@ -133,3 +133,32 @@ def return_item():
         db.session.rollback()
         print(f"Error returning item: {e}")  # Log the error
         return jsonify({'message': 'Failed to process return'}), 500
+
+# Populate books
+@items_bp.route('/populate', methods=['POST'])
+def populate_books():
+    try:
+        # Hardcoded book data
+        books = [
+            {"title": "1984", "author": "George Orwell", "pub_year": 1949, "status": "available", "type": "book"},
+            {"title": "To Kill a Mockingbird", "author": "Harper Lee", "pub_year": 1960, "status": "available", "type": "book"},
+            {"title": "The Great Gatsby", "author": "F. Scott Fitzgerald", "pub_year": 1925, "status": "available", "type": "book"},
+            {"title": "Pride and Prejudice", "author": "Jane Austen", "pub_year": 1813, "status": "available", "type": "book"}
+        ]
+
+        # Insert books into the database
+        for book in books:
+            new_item = Item(
+                title=book["title"],
+                author=book["author"],
+                pub_year=book["pub_year"],
+                status=book["status"],
+                type=book["type"]
+            )
+            db.session.add(new_item)
+        db.session.commit()
+
+        return jsonify({"message": f"{len(books)} books populated successfully!"}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": str(e)}), 500
