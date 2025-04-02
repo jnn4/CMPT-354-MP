@@ -34,7 +34,7 @@ function Login() {
                 localStorage.setItem('userRole', data.role);
     
                 // Redirect based on role
-                window.location.href = data.role === 'staff' ? '/staff-dashboard' : '/userHome';
+                window.location.href = data.role === 'staff' ? '/staffHome' : '/userHome';
             } else {
                 setErrorMessage(data.message || 'Invalid email or password');
             }

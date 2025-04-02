@@ -11,6 +11,7 @@ import Navbar from "./components/navbar";
 import Login from "./components/login";
 import Signup from "./components/signup";
 import UserHome from "./components/userHome";
+import StaffHome from "./components/staffHome";
 import Events from "./components/events";
 
 function App() {
@@ -30,6 +31,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/userHome" element={<UserHome />} />
+            <Route path="/staffHome" element={<StaffHome />} />
             <Route path="/events" element={<Events />} />
           </Routes>
         </div>

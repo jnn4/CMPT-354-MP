@@ -21,8 +21,14 @@ CORS(auth_bp, resources={r"/*": {"origins": "http://localhost:5173"}})
 def signup():
     data = request.get_json()
 
+    # Validate required fields
+    required_fields = ['email', 'first_name', 'last_name', 'password', 'role']
+    for field in required_fields:
+        if field not in data:
+            return jsonify({'message': f'Missing required field: {field}'}), 400
+
     # Check if email already exists
-    if User.query.filter_by(email=data['email']).first():
+    if Person.query.filter_by(email=data['email']).first():
         return jsonify({'message': 'Email already registered'}), 400
 
     # Create a new Person record
@@ -34,17 +40,26 @@ def signup():
         age=data.get('age')
     )
     db.session.add(new_person)
+    db.session.commit()  # Commit to generate person.email for foreign keys
 
-    # Create a new User record
+    # Create User entry (always, regardless of role)
     new_user = User(
-        email=new_person.email,
+        email=new_person.email
     )
-    new_user.set_password(data['password'])  # Hash and store the password using pbkdf2:sha256
+    new_user.set_password(data['password'])
     db.session.add(new_user)
+
+    # Create Staff/User specific entry
+    role = data['role'].lower()
+    
+    if role == 'staff':
+        new_staff = Staff(email=new_person.email)
+        db.session.add(new_staff)
 
     db.session.commit()
 
-    return jsonify({'message': 'Signup successful'}), 201
+    return jsonify({'message': f'Successfully registered as {role}'}), 201
+
 
 # Login route
 @auth_bp.route('/login', methods=['POST'])
@@ -58,16 +73,18 @@ def login():
     # Fetch additional details from Person table
     person = Person.query.filter_by(email=user.email).first()
 
+    # Check if user is also a staff member
+    is_staff = Staff.query.filter_by(email=user.email).first() is not None
+
     return jsonify({
         'message': 'Login successful',
         'email': user.email,
-        'role': 'staff' if isinstance(user, Staff) else 'user',  # Example role logic
+        'role': 'staff' if is_staff else 'user',  # Fixed role check
         'first_name': person.first_name,
         'last_name': person.last_name,
         'phone_num': person.phone_num,
         'age': person.age
     }), 200
-
 
 @auth_bp.route('/login', methods=['OPTIONS'])
 def options_login():
@@ -197,4 +214,33 @@ def get_user_dashboard():
         'volunteeringHistory': volunteer_history,  # Changed to array of entries
         'donatedItems': donated_list,
         'helpRequests': help_requests_list  # Added help requests data here
+    }), 200
+
+# staff dashboard
+@auth_bp.route('/dashboard/staff', methods=['GET'])
+def get_staff_dashboard():
+    email = request.args.get('email')
+    
+    if not email:
+        return jsonify({'message': 'Email parameter is required'}), 400
+
+    # Join Person and Staff tables
+    staff_data = db.session.query(Person, Staff)\
+        .join(Staff, Person.email == Staff.email)\
+        .filter(Person.email == email)\
+        .first()
+    
+    if not staff_data:
+        return jsonify({'message': 'Staff member not found'}), 404
+    
+    person, staff = staff_data
+
+    return jsonify({
+        'email': person.email,
+        'first_name': person.first_name,
+        'last_name': person.last_name,
+        'phone_num': person.phone_num,
+        'age': person.age,
+        'wage': staff.wage,
+        # Add other staff-specific fields if needed
     }), 200

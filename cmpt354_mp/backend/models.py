@@ -30,7 +30,7 @@ class User(db.Model):
 class Staff(db.Model):
     __tablename__ = 'staff'
     email = db.Column(db.String(100), db.ForeignKey('person.email'), primary_key=True)
-    wage = db.Column(db.Float)
+    wage = db.Column(db.Float, default=18.0)  # Default wage set to $18
     
     # Relationships
     person = db.relationship('Person', backref=db.backref('staff', uselist=False))
