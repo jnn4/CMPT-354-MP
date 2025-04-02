@@ -112,3 +112,18 @@ def return_item(id):
         "message": "Item returned successfully",
         "Item": {"id": item.id, "title": item.title}
     }), 200
+
+# Delete an item by ID
+@items_bp.route('/<int:id>', methods=['DELETE'])
+def delete_item(id):
+    item = Item.query.get(id)
+    if not item:
+        return jsonify({"message": "Item not found"}), 404
+
+    try:
+        db.session.delete(item)
+        db.session.commit()
+        return jsonify({"message": "Item deleted successfully"}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": "Failed to delete item", "error": str(e)}), 500

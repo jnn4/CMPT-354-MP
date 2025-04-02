@@ -340,6 +340,77 @@ button.items {
     border-bottom: 2px solid #eee;
 }
 
+/* Management Components Styles */
+.items-list,
+.events-list,
+.fines-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+
+.item-card,
+.event-card,
+.fine-card {
+    background: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s;
+}
+
+.item-card:hover,
+.event-card:hover,
+.fine-card:hover {
+    transform: translateY(-5px);
+}
+
+.item-card h3,
+.event-card h3,
+.fine-card h3 {
+    margin: 0 0 15px 0;
+    color: #333;
+}
+
+.item-card p,
+.event-card p,
+.fine-card p {
+    margin: 5px 0;
+    color: #666;
+}
+
+.delete-button {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: background-color 0.2s;
+}
+
+.delete-button:hover {
+    background-color: #c82333;
+}
+
+.error-message {
+    color: #dc3545;
+    background-color: #f8d7da;
+    padding: 10px;
+    border-radius: 4px;
+    margin: 10px 0;
+}
+
+.success-message {
+    color: #28a745;
+    background-color: #d4edda;
+    padding: 10px;
+    border-radius: 4px;
+    margin: 10px 0;
+}
+
   
 
   

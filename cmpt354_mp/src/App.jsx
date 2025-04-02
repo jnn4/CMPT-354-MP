@@ -14,6 +14,9 @@ import UserHome from "./components/userHome";
 import Events from "./components/events";
 import Users from "./components/users";
 import Rooms from "./components/rooms";
+import ManageItems from "./components/manageItems";
+import ManageEvents from "./components/manageEvents";
+import ManageFines from "./components/manageFines";
 
 function App() {
 
@@ -35,6 +38,9 @@ function App() {
             <Route path="/events" element={<Events />} />
             <Route path="/users" element={<Users />} />
             <Route path="/rooms" element={<Rooms />} />
+            <Route path="/manage-items" element={<ManageItems />} />
+            <Route path="/manage-events" element={<ManageEvents />} />
+            <Route path="/manage-fines" element={<ManageFines />} />
           </Routes>
           
           {/* Flask API Response */}
