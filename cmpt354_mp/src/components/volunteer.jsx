@@ -26,20 +26,7 @@ function volunteer() {
   return (
     <div className="content">
       <h1>Volunteer Sign Up</h1>
-      <div className="box">
-          <form>
-              <label>Username: </label>
-              <br></br>
-              <input type="text" className="rounded-textbox" id="username" name="username" required></input>
-              <br></br>
-              <br></br>
-              <label>Password: </label>
-              <br></br>
-              <input type="password" className="rounded-textbox" id="password" name="password" required></input>
-              <br></br>
-              <button type="submit">Sign Up</button>
-          </form>
-      </div>
+
       <div className="volContainer">
         <p>Available Position: </p>
 

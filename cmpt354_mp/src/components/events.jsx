@@ -1,73 +1,98 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import '../App.css';
-import { useEffect, useState } from 'react';
 
-function events(){
+function Events() {
     const [events, setEvents] = useState([]);
     const [searchText, setSearchText] = useState('');
+    const [selectedType, setSelectedType] = useState('all');
+    const [userEmail, setUserEmail] = useState('');
 
-    // Fetch books from Flask API  
+    // Fetch user email from localStorage on component mount
     useEffect(() => {
-        fetch("http://localhost:8000/api/events")
-            .then((response) => response.json()) // Convert response to JSON
-            .then((data) => setEvents(data)) // Store the data in state
-            .catch((error) => console.error("Error:", error));
+        const email = localStorage.getItem('userEmail');
+        if (email) setUserEmail(email);
     }, []);
 
-    window.onload = function() {
-        fetch('http://localhost:8000/api/events/populate_events', {
-            method: 'POST',
-        })
-        .then(response => response.json())
-        .then(data => console.log("Book added:", data))
-        .catch(error => console.error('Error:', error));
-    };
-    
+    // Fetch events based on filters
+    useEffect(() => {
+        let url = `http://localhost:8000/events?search=${searchText}`;
+        if (selectedType !== 'all') {
+            url += `&type=${selectedType}`;
+        }
 
-    const filteredEvents = events.filter(
-        (event) =>
-            event.title.toLowerCase().includes(searchText.toLowerCase()) ||
-            event.description.toLowerCase().includes(searchText.toLowerCase()) ||
-            (event.date && event.date.toString().includes(searchText))
-    );
+        fetch(url)
+            .then(res => res.json())
+            .then(data => setEvents(data))
+            .catch(err => console.error("Error fetching events:", err));
+    }, [searchText, selectedType]);
+
+    // Handle attending an event
+    const handleAttendEvent = async (eventId) => {
+        if (!userEmail) {
+            alert('Please login to attend events');
+            return;
+        }
+
+        try {
+            const response = await fetch('http://localhost:8000/events/attend', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    user_email: userEmail,
+                    event_id: eventId,
+                }),
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                alert(data.message);
+            } else {
+                alert(data.message || 'Failed to attend the event');
+            }
+        } catch (err) {
+            console.error("Error attending the event:", err);
+            alert('An error occurred while attending the event.');
+        }
+    };
 
     return (
         <div className="content">
-            <h1>Find Events in the Library</h1>
-            <br></br>
-            
-            <input
-                className = "rounded-textbox"
-                type="text"
-                placeholder="Search"
-                value={searchText}
-                onChange={(e) => setSearchText(e.target.value)}
-            />
+            <h1>Events</h1>
 
-            <p>Labels</p>
-            <button className="items">Name</button>
-            <button className="items">Audience</button>
-            <button className="items">Date</button>
-            <button className="items">Time</button>
-            <button className="items">Type</button>
+            {/* Search and Filter Controls */}
+            <div className="filter-controls">
+                <input
+                    type="text"
+                    placeholder="Search events..."
+                    value={searchText}
+                    onChange={(e) => setSearchText(e.target.value)}
+                />
+                <select value={selectedType} onChange={(e) => setSelectedType(e.target.value)}>
+                    <option value="all">All Types</option>
+                    <option value="workshop">Workshop</option>
+                    <option value="seminar">Seminar</option>
+                    <option value="meetup">Meetup</option>
+                </select>
+            </div>
 
-            <ul className="items">
-                {filteredEvents.map((event) => (
-                    <li className="items" key={event.id}>
-                        {event.title} by {event.description} ({event.date})
-                        {event.rsvp ? (
-                            <button className="items">Attending</button>
-                        ) : (
-                            <button className="items">Available</button>
-                        )}
-                    </li>
+            {/* Events List */}
+            <div className="events-list">
+                {events.map(event => (
+                    <div key={event.event_id} className="event-card">
+                        <h3>{event.name}</h3>
+                        <p>Type: {event.type}</p>
+                        <p>Date: {new Date(event.date).toLocaleDateString()}</p>
+                        <p>Time: {event.time}</p>
+                        <p>Audience: {event.audience_type} ({event.min_age}-{event.max_age} years)</p>
+                        <button onClick={() => handleAttendEvent(event.event_id)}>Attend</button>
+                    </div>
                 ))}
-                {filteredEvents.length === 0 && searchText && (
-                    <li className="items">No results found</li>
+                {events.length === 0 && (
+                    <p>No events found matching your criteria.</p>
                 )}
-            </ul>
+            </div>
         </div>
-    )
+    );
 }
 
-export default events;
+export default Events;

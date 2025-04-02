@@ -59,24 +59,28 @@ function UserHome() {
     // Handle return item action
     const handleReturnItem = async (itemId) => {
         try {
-            const response = await fetch(`http://localhost:8000/user/return-item`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ itemId }),
-            });
-
-            if (response.ok) {
-                alert('Item returned successfully!');
-                // Remove the returned item from the list
-                setBorrowedItems(borrowedItems.filter(item => item.id !== itemId));
-            } else {
-                alert('Failed to return item.');
-            }
+          const response = await fetch(`http://localhost:8000/items/return`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              item_id: itemId,
+              user_email: localStorage.getItem('userEmail') // Get email from localStorage
+            }),
+          });
+      
+          const data = await response.json();
+          
+          if (response.ok) {
+            console.log("Return successful:", data);
+            // Update UI state here
+          } else {
+            alert(data.message || 'Return failed');
+          }
         } catch (error) {
-            console.error('Error returning item:', error);
-            alert('An error occurred while returning the item.');
+          console.error('Error returning item:', error);
+          alert('An error occurred while returning the item.');
         }
-    };
+      };      
 
     if (errorMessage) {
         return <div className="content"><h1>Error</h1><p>{errorMessage}</p></div>;
@@ -85,6 +89,33 @@ function UserHome() {
     if (!userData) {
         return <div className="content"><h1>Loading...</h1></div>;
     }
+
+    // HANDLING UN REGISTER!
+    const handleUnregisterEvent = async (eventId) => {
+        try {
+        const response = await fetch('http://localhost:8000/events/unregister', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+            user_email: localStorage.getItem('userEmail'),
+            event_id: eventId
+            }),
+        });
+    
+        const data = await response.json();
+        if (response.ok) {
+            // Remove unregistered event from state
+            setUpcomingEvents(prev => prev.filter(event => event.id !== eventId));
+            alert(data.message);
+        } else {
+            alert(data.message || 'Unregistration failed');
+        }
+        } catch (error) {
+        console.error('Error unregistering:', error);
+        alert('Error unregistering from event');
+        }
+    };
+  
 
     const handleSubmit = async (event) => {
         event.preventDefault();
@@ -157,17 +188,23 @@ function UserHome() {
     
             <div>
                 <h2>Upcoming Events</h2>
-                {upcomingEvents.length > 0 ? (
-                    <ul className="events">
+                    {upcomingEvents.length > 0 ? (
+                        <ul className="events">
                         {upcomingEvents.map(event => (
                             <li key={event.id} className="events">
-                                {event.name} on {new Date(event.date).toLocaleDateString()} at {event.time}
+                            {event.name} on {new Date(event.date).toLocaleDateString()} at {event.time}
+                            <button 
+                                onClick={() => handleUnregisterEvent(event.id)}
+                                className="unregister-btn"
+                            >
+                                Unregister
+                            </button>
                             </li>
                         ))}
-                    </ul>
-                ) : (
-                    <p>No upcoming events.</p>
-                )}
+                        </ul>
+                    ) : (
+                        <p>No upcoming registered events.</p>
+                    )}
             </div>
     
             <div>
