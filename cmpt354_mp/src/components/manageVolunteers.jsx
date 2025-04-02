@@ -12,7 +12,7 @@ function ManageVolunteers() {
 
     const fetchVolunteers = async () => {
         try {
-            const response = await fetch('http://localhost:8000/volunteers/');
+            const response = await fetch('http://localhost:8000/volunteer/');
             if (!response.ok) {
                 throw new Error('Failed to fetch volunteers data');
             }
@@ -30,7 +30,7 @@ function ManageVolunteers() {
         }
 
         try {
-            const response = await fetch(`http://localhost:8000/volunteers/${volunteerId}`, {
+            const response = await fetch(`http://localhost:8000/volunteer/${volunteerId}`, {
                 method: 'DELETE',
             });
 
@@ -58,7 +58,9 @@ function ManageVolunteers() {
                         <h3>{volunteer.first_name} {volunteer.last_name}</h3>
                         <p><strong>Email:</strong> {volunteer.email}</p>
                         <p><strong>Phone:</strong> {volunteer.phone_num}</p>
-                        <p><strong>Status:</strong> {volunteer.status}</p>
+                        <p><strong>Role:</strong> {volunteer.role}</p>
+                        <p><strong>Start Date:</strong> {volunteer.start_date}</p>
+                        <p><strong>End Date:</strong> {volunteer.end_date || 'Ongoing'}</p>
                         <button 
                             className="delete-button"
                             onClick={() => handleDelete(volunteer.volunteer_id)}

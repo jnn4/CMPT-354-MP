@@ -4,37 +4,42 @@ from sqlalchemy.exc import IntegrityError
 from datetime import date
 from werkzeug.security import generate_password_hash
 
-volunteer_bp = Blueprint('volunteer', __name__, url_prefix='/volunteer')
+volunteer_bp = Blueprint('volunteer', __name__, url_prefix='/volunteers')
 
+# Get all volunteers
 @volunteer_bp.route('/', methods=['GET'])
 def get_all_volunteers():
-    # Query to fetch all volunteers with their corresponding staff and person details
-    volunteers = db.session.query(
-        Volunteer.volunteer_id,
-        Volunteer.role,
-        Volunteer.start_date,
-        Volunteer.end_date,
-        Person.first_name,
-        Person.last_name,
-        Person.email
-    ).join(Staff, Volunteer.volunteer_id == Staff.staff_id) \
-     .join(Person, Staff.email == Person.email).all()  # Ensure Staff is linked to Person
+    try:
+        # Join Volunteer, Staff, and Person tables to get complete volunteer information
+        volunteers = db.session.query(
+            Volunteer.volunteer_id,
+            Person.first_name,
+            Person.last_name,
+            Person.email,
+            Person.phone_num,
+            Volunteer.role,
+            Volunteer.start_date,
+            Volunteer.end_date
+        ).join(Staff, Volunteer.volunteer_id == Staff.staff_id).join(Person, Staff.email == Person.email).all()
 
-    # Create response list
-    volunteer_list = [
-        {
-            "volunteer_id": v.volunteer_id,
-            "role": v.role,
-            "start_date": v.start_date.strftime('%Y-%m-%d') if v.start_date else None,  # Format date
-            "end_date": v.end_date.strftime('%Y-%m-%d') if v.end_date else None,  # Format date
-            "first_name": v.first_name,
-            "last_name": v.last_name,
-            "email": v.email
-        }
-        for v in volunteers
-    ]
-
-    return jsonify(volunteer_list), 200
+        # Format the response
+        volunteer_list = [
+            {
+                "volunteer_id": v[0],
+                "first_name": v[1],
+                "last_name": v[2],
+                "email": v[3],
+                "phone_num": v[4],
+                "role": v[5],
+                "start_date": v[6].strftime('%Y-%m-%d') if v[6] else None,
+                "end_date": v[7].strftime('%Y-%m-%d') if v[7] else None
+            }
+            for v in volunteers
+        ]
+        
+        return jsonify(volunteer_list), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 # Create a new volunteer
 @volunteer_bp.route('/post', methods=['POST'])
@@ -173,24 +178,22 @@ def update_volunteer(volunteer_id):
         db.session.rollback()
         return jsonify({"message": str(e)}), 500
 
-# Delete volunteer by ID
+# Delete a volunteer
 @volunteer_bp.route('/<int:volunteer_id>', methods=['DELETE'])
 def delete_volunteer(volunteer_id):
     try:
         volunteer = Volunteer.query.get(volunteer_id)
-
         if not volunteer:
-            return jsonify({"message": "Volunteer not found!"}), 404
-
+            return jsonify({"error": "Volunteer not found"}), 404
+        
+        # Delete the volunteer
         db.session.delete(volunteer)
         db.session.commit()
-
-        return jsonify({"message": "Volunteer deleted successfully!"}), 200
-
+        
+        return jsonify({"message": "Volunteer deleted successfully"}), 200
     except Exception as e:
         db.session.rollback()
-        return jsonify({"message": str(e)}), 500
-
+        return jsonify({"error": str(e)}), 500
 
 # Populate the Volunteer table
 @volunteer_bp.route('/populate', methods=['POST'])

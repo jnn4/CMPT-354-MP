@@ -52,7 +52,7 @@ function Navbar() {
                     </div>
                     <ul>
                         {/* <li><a href="/">Home</a></li> */}
-                        <li><a href="/userHome">User Home</a></li>
+                        {user.role !== 'staff' && <li><a href="/userHome">User Home</a></li>}
                         {user.role !== 'staff' && (
                             <>
                                 <li><a href="/items">Items</a></li>
