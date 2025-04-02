@@ -53,19 +53,24 @@ function Navbar() {
                     <ul>
                         {/* <li><a href="/">Home</a></li> */}
                         <li><a href="/userHome">User Home</a></li>
-                        <li><a href="/items">Items</a></li>
-                        <li><a href="/events">Events</a></li>
+                        {user.role !== 'staff' && (
+                            <>
+                                <li><a href="/items">Items</a></li>
+                                <li><a href="/events">Events</a></li>
+                                <li><a href="/volunteer">Volunteer</a></li>
+                                <li><a href="/donate">Donate</a></li>
+                                <li><a href="/contact">Contact</a></li>
+                            </>
+                        )}
                         {user.role === 'staff' && (
                             <>
-                                <li><a href="/personnel">Personnel</a></li>
                                 <li><a href="/manage-items">Manage Items</a></li>
                                 <li><a href="/manage-events">Manage Events</a></li>
                                 <li><a href="/manage-fines">Manage Fines</a></li>
+                                <li><a href="/manage-staff">Manage Staff</a></li>
+                                <li><a href="/manage-volunteers">Manage Volunteers</a></li>
                             </>
                         )}
-                        <li><a href="/volunteer">Volunteer</a></li>
-                        <li><a href="/donate">Donate</a></li>
-                        <li><a href="/contact">Contact</a></li>
                         <li onClick={handleLogout} style={{ cursor: 'pointer' }}>Log out</li>
                     </ul>
                 </>

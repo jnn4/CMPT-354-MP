@@ -17,6 +17,8 @@ import Rooms from "./components/rooms";
 import ManageItems from "./components/manageItems";
 import ManageEvents from "./components/manageEvents";
 import ManageFines from "./components/manageFines";
+import ManageStaff from './components/manageStaff';
+import ManageVolunteers from './components/manageVolunteers';
 
 function App() {
 
@@ -41,6 +43,8 @@ function App() {
             <Route path="/manage-items" element={<ManageItems />} />
             <Route path="/manage-events" element={<ManageEvents />} />
             <Route path="/manage-fines" element={<ManageFines />} />
+            <Route path="/manage-staff" element={<ManageStaff />} />
+            <Route path="/manage-volunteers" element={<ManageVolunteers />} />
           </Routes>
           
           {/* Flask API Response */}
