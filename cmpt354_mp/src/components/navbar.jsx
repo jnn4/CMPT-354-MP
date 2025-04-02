@@ -14,7 +14,7 @@ function navbar(){
                 <li><a href="/personnel">Personnel</a></li>
                 <li><a href="/volunteer">Volunteer</a></li>
                 <li><a href="/donate">Donate</a></li>
-                <li><a href="/contact">Contact</a></li>
+                <li><a href="/help-request">Help Requests</a></li>
             </ul>
         </div>
     );

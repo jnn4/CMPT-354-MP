@@ -139,8 +139,9 @@ class RequestHelp(db.Model):
     __tablename__ = 'request_help'
     request_id = db.Column(db.Integer, primary_key=True)
     user_email = db.Column(db.String(100), db.ForeignKey('user.email'), nullable=False)
-    staff_email = db.Column(db.String(100), db.ForeignKey('staff.email'), nullable=False)
     request_text = db.Column(db.Text, nullable=False)
-    response_text = db.Column(db.Text)
-    status = db.Column(db.String(50), default='open')
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)    
+    status = db.Column(db.Boolean, default=True)  # True = Open, False = Closed
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    # Relationships
+    user = db.relationship('User', backref=db.backref('help_requests'))

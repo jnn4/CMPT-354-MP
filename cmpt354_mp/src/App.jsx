@@ -6,7 +6,7 @@ import Items from "./components/items";
 import Personnel from "./components/personnel";
 import Volunteer from "./components/Volunteer";
 import Donate from "./components/donate";
-import Contact from "./components/contact";
+import HelpRequest from "./components/HelpRequest";
 import Navbar from "./components/navbar";
 import Login from "./components/login";
 import Signup from "./components/signup";
@@ -26,7 +26,7 @@ function App() {
             <Route path="/personnel" element={<Personnel />} />
             <Route path="/volunteer" element={<Volunteer />} />
             <Route path="/donate" element={<Donate />} />
-            <Route path="/contact" element={<Contact />} />
+            <Route path="/help-request" element={<HelpRequest />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/userHome" element={<UserHome />} />

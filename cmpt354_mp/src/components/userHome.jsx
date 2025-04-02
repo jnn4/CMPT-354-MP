@@ -10,6 +10,7 @@ function UserHome() {
     const [upcomingEvents, setUpcomingEvents] = useState([]); // Stores upcoming events
     const [volunteeringHistory, setVolunteeringHistory] = useState([]); // Stores volunteering history
     const [donatedItems, setDonatedItemsHistory] = useState([]); // Stores volunteering history
+    const [helpRequests, setHelpRequests] = useState([]); // Stores help requests
     const [errorMessage, setErrorMessage] = useState(''); // Error handling
 
     // Fetch user data after component mounts
@@ -48,6 +49,7 @@ function UserHome() {
                     setUpcomingEvents(data.upcomingEvents);
                     setVolunteeringHistory(data.volunteeringHistory); // Set volunteering history
                     setDonatedItemsHistory(data.donatedItems); // Set donating history
+                    setHelpRequests(data.helpRequests) // Set help request history
                 } else {
                     setErrorMessage(data.message || 'Failed to fetch user data.');
                 }
@@ -198,7 +200,6 @@ function UserHome() {
             alert('An error occurred while starting volunteering.');
         }
     };    
-   
     
     return (
         <div className='content'>
@@ -281,6 +282,23 @@ function UserHome() {
                     </div>
                 ) : (
                     <p className="no-donations">You haven't donated any items yet</p>
+                )}
+            </div>
+
+            <div>
+                <h2>Help Requests</h2>
+                {helpRequests.length > 0 ? (
+                <ul>
+                    {helpRequests.map(req => (
+                    <li key={req.id}>
+                        <p>{req.request_text}</p>
+                        <p>Status: {req.status}</p>
+                        <p>Submitted on: {new Date(req.created_at).toLocaleDateString()}</p>
+                    </li>
+                    ))}
+                </ul>
+                ) : (
+                <p>No help requests found.</p>
                 )}
             </div>
 

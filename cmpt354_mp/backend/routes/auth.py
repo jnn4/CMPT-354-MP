@@ -1,7 +1,7 @@
 # auth.py handles the login, sign up, logout and dashboard updates.
 from flask import Blueprint, request, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
-from models import Person, User, Staff, Volunteer, Item, FutureItem, donates
+from models import Person, User, Staff, Volunteer, Item, FutureItem, donates, RequestHelp
 from models import BorrowTransaction
 from models import Event, attends
 from datetime import datetime
@@ -173,6 +173,19 @@ def get_user_dashboard():
         'donation_status': donation_status
     } for item, future, donation_date, donation_status in donated_items]
 
+    # Fetch help requests for the user
+    help_requests = db.session.query(RequestHelp)\
+                              .filter_by(user_email=email)\
+                              .order_by(RequestHelp.created_at.desc())\
+                              .all()
+
+    help_requests_list = [{
+        "id": req.request_id,
+        "request_text": req.request_text,
+        "status": "Open" if req.status else "Closed",
+        "created_at": req.created_at.isoformat()
+    } for req in help_requests]
+
     return jsonify({
         'user': {
             'firstName': person.first_name,
@@ -182,5 +195,6 @@ def get_user_dashboard():
         'borrowedItems': items_list,
         'upcomingEvents': events_list,
         'volunteeringHistory': volunteer_history,  # Changed to array of entries
-        'donatedItems': donated_list
+        'donatedItems': donated_list,
+        'helpRequests': help_requests_list  # Added help requests data here
     }), 200
