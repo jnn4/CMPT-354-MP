@@ -4,7 +4,7 @@ from models import Staff
 from werkzeug.security import generate_password_hash
 
 
-staff_bp = Blueprint('staff', __name__, url_prefix='/staff')
+# staff_bp = Blueprint('staff', __name__, url_prefix='/staff')
 
 # Get all staff members
 @staff_bp.route('/staff/', methods=['GET'])
@@ -37,14 +37,14 @@ def create_staff():
     if not all(k in data for k in ('email', 'position', 'wage')):
         return jsonify({'error': 'Missing required fields'}), 400
     
-    new_staff = Staff(
-        email=data['email'],
-        position=data['position'],
-        wage=data['wage']
-    )
-    db.session.add(new_staff)
-    db.session.commit()
-    return jsonify({'message': 'Staff member created successfully'}), 201
+#     new_staff = Staff(
+#         email=data['email'],
+#         position=data['position'],
+#         wage=data['wage']
+#     )
+#     db.session.add(new_staff)
+#     db.session.commit()
+#     return jsonify({'message': 'Staff member created successfully'}), 201
 
 # Update a staff member
 @staff_bp.route('/staff/<int:staff_id>', methods=['PUT'])
@@ -53,12 +53,12 @@ def update_staff(staff_id):
     if not staff:
         return jsonify({'error': 'Staff member not found'}), 404
     
-    data = request.json
-    staff.position = data.get('position', staff.position)
-    staff.wage = data.get('wage', staff.wage)
+#     data = request.json
+#     staff.position = data.get('position', staff.position)
+#     staff.wage = data.get('wage', staff.wage)
     
-    db.session.commit()
-    return jsonify({'message': 'Staff member updated successfully'}), 200
+#     db.session.commit()
+#     return jsonify({'message': 'Staff member updated successfully'}), 200
 
 # Delete a staff member
 @staff_bp.route('/staff/<int:staff_id>', methods=['DELETE'])

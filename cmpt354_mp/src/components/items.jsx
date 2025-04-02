@@ -3,13 +3,18 @@ import '../app.css';
 
 function Items() {
   const [items, setItems] = useState([]);
+  const [items, setItems] = useState([]);
   const [searchText, setSearchText] = useState('');
   const [itemsPopulated, setItemsPopulated] = useState(false);
+  const [itemsPopulated, setItemsPopulated] = useState(false);
 
+  // Fetch items only once when the component mounts
   useEffect(() => {
     // Fetch books only once when the component mounts
     fetch("http://localhost:8000/items/")
       .then((response) => response.json())
+      .then((data) => setItems(data))
+      .catch((error) => console.error("Error fetching items:", error));
       .then((data) => setItems(data))
       .catch((error) => console.error("Error fetching items:", error));
   }, []); // Empty dependency array ensures this only runs once after the component mounts
@@ -71,7 +76,7 @@ const populateItems = () => {
 
   return (
     <div className="content">
-      <h1>Library Books</h1>
+      <h1>Library Items</h1>
       <p>Labels</p>
       <button className="items">Name</button>
       <button className="items">Audience</button>
@@ -105,10 +110,13 @@ const populateItems = () => {
           </li>
         ))}
         {filteredItems.length === 0 && searchText && (
+        {filteredItems.length === 0 && searchText && (
           <li className="items">No results found</li>
         )}
       </ul>
 
+      {/* Optional: Button to populate items (just for testing) */}
+      <button onClick={populateItems} className="items">Populate Items</button>
       {/* Optional: Button to populate items (just for testing) */}
       <button onClick={populateItems} className="items">Populate Items</button>
     </div>
