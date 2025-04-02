@@ -37,6 +37,7 @@ from routes.events import events_bp
 from routes.rooms import rooms_bp
 from routes.transactions import transactions_bp
 from routes.requests_help import requests_help_bp
+from routes.volunteer import volunteer_bp
 # from routes.future_items import future_items_bp
 # from routes.fines import fines_bp
 
@@ -49,6 +50,7 @@ app.register_blueprint(events_bp, url_prefix='/events')
 app.register_blueprint(rooms_bp, url_prefix='/rooms')
 app.register_blueprint(transactions_bp, url_prefix='/transactions')
 app.register_blueprint(requests_help_bp, url_prefix='/requests_help')
+app.register_blueprint(volunteer_bp, url_prefix='/volunteer')
 # app.register_blueprint(future_items_bp, url_prefix='/future_items')
 # app.register_blueprint(fines_bp, url_prefix='/fines')
 

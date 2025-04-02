@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import '../App.css';
 import LogoutButton from './LogoutButton';
+import Volunteer from "./Volunteer";
+
 
 function UserHome() {
     const [userData, setUserData] = useState(null); // Stores user details
     const [borrowedItems, setBorrowedItems] = useState([]); // Stores borrowed items
     const [upcomingEvents, setUpcomingEvents] = useState([]); // Stores upcoming events
-    const [volunteeringPosition, setVolunteeringPosition] = useState(null); // Stores volunteering position
+    const [volunteeringHistory, setVolunteeringHistory] = useState([]); // Stores volunteering history
     const [errorMessage, setErrorMessage] = useState(''); // Error handling
 
     // Fetch user data after component mounts
@@ -43,7 +45,7 @@ function UserHome() {
                 if (response.ok) {
                     setBorrowedItems(data.borrowedItems);
                     setUpcomingEvents(data.upcomingEvents);
-                    setVolunteeringPosition(data.volunteeringPosition);
+                    setVolunteeringHistory(data.volunteeringHistory); // Set volunteering history
                 } else {
                     setErrorMessage(data.message || 'Failed to fetch user data.');
                 }
@@ -152,6 +154,49 @@ function UserHome() {
             setErrorMessage('Unable to connect to server. Please try again.');
         }
     };
+
+    const handleStopVolunteering = async (entryId) => {
+        try {
+            const response = await fetch(`http://localhost:8000/volunteer/stop`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: userData.email })
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                alert(data.message);
+                window.location.reload(); // Refresh dashboard after stopping volunteering
+            } else {
+                alert(data.message || 'Failed to stop volunteering.');
+            }
+        } catch (error) {
+            console.error('Error stopping volunteering:', error);
+            alert('An error occurred while stopping volunteering.');
+        }
+    };
+
+
+    const handleStartVolunteering = async () => {
+        try {
+            const response = await fetch(`http://localhost:8000/volunteer/start`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: userData.email }) // Ensure email is passed correctly
+            });
+    
+            const data = await response.json();
+            if (response.ok) {
+                alert(data.message);
+                window.location.reload(); // Refresh dashboard after starting volunteering
+            } else {
+                alert(data.message || 'Failed to start volunteering.');
+            }
+        } catch (error) {
+            console.error('Error starting volunteering:', error);
+            alert('An error occurred while starting volunteering.');
+        }
+    };    
     
     
     return (
@@ -206,13 +251,36 @@ function UserHome() {
                         <p>No upcoming registered events.</p>
                     )}
             </div>
-    
+
             <div>
-                <h2>Volunteering Position</h2>
-                {volunteeringPosition ? (
-                    <p>{volunteeringPosition.role} from {new Date(volunteeringPosition.startDate).toLocaleDateString()} to {new Date(volunteeringPosition.endDate).toLocaleDateString()}</p>
+                <h2>Volunteering History</h2>
+                {volunteeringHistory.length > 0 ? (
+                    <ul className="volunteer-list">
+                        {volunteeringHistory.map((entry, index) => (
+                            <li key={index}>
+                                {new Date(entry.start_date).toLocaleDateString()} - 
+                                {entry.end_date 
+                                    ? new Date(entry.end_date).toLocaleDateString()
+                                    : 'Present'}
+                                <button 
+                                    onClick={() => handleStopVolunteering(entry.id)}
+                                    disabled={!!entry.end_date} // Disable button for completed entries
+                                >
+                                    {entry.end_date ? 'Completed' : 'Stop Volunteering'}
+                                </button>
+                            </li>
+                        ))}
+                    </ul>
                 ) : (
-                    <p>You are not currently volunteering.</p>
+                    <p>No volunteering history found</p>
+                )}
+                {!volunteeringHistory.some(entry => entry.status === 'active') && (
+                    <button 
+                        onClick={() => handleStartVolunteering()}
+                        className="start-volunteer"
+                    >
+                        Start Volunteering Today!
+                    </button>
                 )}
             </div>
     

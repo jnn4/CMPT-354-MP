@@ -1,46 +1,36 @@
-import '../app.css';
-import React, {useEffect, useState} from 'react';
+import React from 'react';
 
-function volunteer() {
-  const [volunteer, setVolunteer] = useState([]);
+function Volunteer({ isVolunteering }) {
+    const email = localStorage.getItem('userEmail');
 
-  // Fetch volunteer from Flask API
-  useEffect(() => {
-      fetch("http://localhost:8000/api/volunteer")
-          .then((response) => response.json()) // Convert response to JSON
-          .then((data) => setVolunteer(data)) // Store the data in state
-          .catch((error) => console.error("Error:", error));
-  }, []);
+    const handleVolunteer = async () => {
+        try {
+            const endpoint = isVolunteering ? '/volunteer/stop' : '/volunteer/start';
+            const response = await fetch(`http://localhost:8000${endpoint}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email })
+            });
 
-  // Function to add a volunteer
-  window.onload = function() {
-      fetch('http://localhost:8000/api/volunteer/populate_volunteer', {
-          method: 'POST',
-      })
-      .then(response => response.json())
-      .then(data => console.log("Volunteer added:", data))
-      .catch(error => console.error('Error:', error));
-  }
+            const data = await response.json();
+            if (response.ok) {
+                window.location.reload(); // Refresh dashboard data
+            }
+            alert(data.message);
+        } catch (error) {
+            console.error('Volunteer action failed:', error);
+            alert('Failed to update volunteer status');
+        }
+    };
 
-
-  return (
-    <div className="content">
-      <h1>Volunteer Sign Up</h1>
-
-      <div className="volContainer">
-        <p>Available Position: </p>
-
-        <ul className="items">
-          {volunteer.map((volunteer) => (
-            <li className="items" key={volunteer.id}>
-               {volunteer.position}
-               <button className="items">Sign Up</button>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </div>
-  );
+    return (
+        <button 
+            onClick={handleVolunteer}
+            className={`volunteer-btn ${isVolunteering ? 'stop' : 'start'}`}
+        >
+            {isVolunteering ? 'Stop Volunteering' : 'Yes, I want to volunteer today!'}
+        </button>
+    );
 }
 
-export default volunteer;
+export default Volunteer;

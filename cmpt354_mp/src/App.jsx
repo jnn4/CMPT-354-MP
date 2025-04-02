@@ -4,7 +4,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from "./components/home";
 import Items from "./components/items";
 import Personnel from "./components/personnel";
-import Volunteer from "./components/volunteer";
+import Volunteer from "./components/Volunteer";
 import Donate from "./components/donate";
 import Contact from "./components/contact";
 import Navbar from "./components/navbar";

@@ -38,13 +38,18 @@ class Staff(db.Model):
 
 class Volunteer(db.Model):
     __tablename__ = 'volunteer'
-    email = db.Column(db.String(100), db.ForeignKey('person.email'), primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)  # New primary key
+    email = db.Column(db.String(100), db.ForeignKey('person.email'), nullable=False)
     start_date = db.Column(db.Date, nullable=False)
     end_date = db.Column(db.Date)
     
+    # Unique constraint: Only one active (end_date=NULL) per email
+    __table_args__ = (
+        db.UniqueConstraint('email', 'end_date', name='uq_volunteer_active'),
+    )
+    
     # Relationships
-    person = db.relationship('Person', backref=db.backref('volunteer', uselist=False))
-    # assisted_staff = db.relationship('Staff', secondary='assists', backref='assistants')
+    person = db.relationship('Person', backref=db.backref('volunteers', uselist=True))
 
 # ----- Library Entities -----
 class Item(db.Model):
@@ -119,11 +124,6 @@ manages = db.Table('manages',
     db.Column('staff_email', db.String(100), db.ForeignKey('staff.email'), primary_key=True),
     db.Column('event_id', db.Integer, db.ForeignKey('event.event_id'), primary_key=True)
 )
-
-# assists = db.Table('assists',
-#     db.Column('staff_email', db.String(100), db.ForeignKey('staff.email'), primary_key=True),
-#     db.Column('volunteer_email', db.String(100), db.ForeignKey('volunteer.email'), primary_key=True)
-# )
 
 # ----- Help System -----
 class RequestHelp(db.Model):

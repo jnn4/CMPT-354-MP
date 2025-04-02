@@ -1,10 +1,7 @@
 # auth.py handles the login, sign up, logout and dashboard updates.
 from flask import Blueprint, request, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
-from models import Person
-from models import User
-from models import Staff
-from models import Item
+from models import Person, User, Staff, Volunteer, Item
 from models import BorrowTransaction
 from models import Event, attends
 from datetime import datetime
@@ -94,14 +91,17 @@ def get_user_dashboard():
         return jsonify({'message': 'Email parameter is required'}), 400
 
     # Join Person and User tables
-    user_data = db.session.query(Person, User).join(User, Person.email == User.email).filter(Person.email == email).first()
+    user_data = db.session.query(Person, User)\
+        .join(User, Person.email == User.email)\
+        .filter(Person.email == email)\
+        .first()
     
     if not user_data:
         return jsonify({'message': 'User not found'}), 404
     
     person, user = user_data
 
-    # Fetch borrowed items with a join
+    # Fetch borrowed items with join
     borrowed_items = db.session.query(Item, BorrowTransaction)\
         .join(BorrowTransaction, Item.item_id == BorrowTransaction.item_id)\
         .filter(BorrowTransaction.user_email == email)\
@@ -118,7 +118,7 @@ def get_user_dashboard():
         'due_date': transaction.due_date.strftime('%Y-%m-%d')
     } for item, transaction in borrowed_items]
 
-    # Fetch upcoming events with a join
+    # Fetch upcoming events with join
     upcoming_events = db.session.query(Event, attends.c.attendance_status)\
         .join(attends, Event.event_id == attends.c.event_id)\
         .filter(attends.c.user_email == email)\
@@ -135,6 +135,18 @@ def get_user_dashboard():
         'location': event.room.name if event.room else 'Online'
     } for event, status in upcoming_events]
 
+    # Fetch ALL volunteer entries
+    volunteer_entries = db.session.query(Volunteer)\
+        .filter_by(email=email)\
+        .order_by(Volunteer.start_date.desc())\
+        .all()
+
+    volunteer_history = [{
+        'start_date': entry.start_date.isoformat(),
+        'end_date': entry.end_date.isoformat() if entry.end_date else None,
+        'status': 'active' if not entry.end_date else 'completed'
+    } for entry in volunteer_entries]
+
     return jsonify({
         'user': {
             'firstName': person.first_name,
@@ -142,7 +154,6 @@ def get_user_dashboard():
             'email': person.email
         },
         'borrowedItems': items_list,
-        'upcomingEvents': events_list,  # Now populated with actual data
-        'volunteeringPosition': None
+        'upcomingEvents': events_list,
+        'volunteeringHistory': volunteer_history  # Changed to array of entries
     }), 200
-
