@@ -2,8 +2,9 @@ from flask import Blueprint, request, jsonify
 from models import Volunteer, Person, Staff, db
 from sqlalchemy.exc import IntegrityError
 from datetime import date
+from werkzeug.security import generate_password_hash
 
-volunteer_bp = Blueprint('volunteer', __name__, url_prefix='/volunteers')
+volunteer_bp = Blueprint('volunteer', __name__, url_prefix='/volunteer')
 
 @volunteer_bp.route('/', methods=['GET'])
 def get_all_volunteers():
@@ -41,27 +42,60 @@ def create_volunteer():
     try:
         data = request.get_json()
 
-        name = data.get('name')
-        contact = data.get('contact')
-        skills = data.get('skills')
+        # Extract data from request
+        first_name = data.get('firstName')
+        last_name = data.get('lastName')
+        email = data.get('email')
+        phone = data.get('phone')
+        role = data.get('role')
         availability = data.get('availability')
+        skills = data.get('skills')
 
         # Validation
-        if not name or not contact:
-            return jsonify({"message": "Name and Contact are required!"}), 400
+        if not all([first_name, last_name, email, phone, role]):
+            return jsonify({"message": "First name, last name, email, phone, and role are required!"}), 400
+
+        # Check if person already exists
+        existing_person = Person.query.get(email)
+        if existing_person:
+            return jsonify({"message": "A person with this email already exists!"}), 400
+
+        # Create new person
+        new_person = Person(
+            email=email,
+            first_name=first_name,
+            last_name=last_name,
+            phone_num=phone
+        )
+        db.session.add(new_person)
+        db.session.flush()  # Get the person's email without committing
+
+        # Create new staff member
+        new_staff = Staff(
+            email=email,
+            position=role,
+            password=generate_password_hash('volunteer123')  # Default password
+        )
+        db.session.add(new_staff)
+        db.session.flush()  # Get the staff_id without committing
 
         # Create new volunteer
-        new_volunteer = Volunteer(name=name, contact=contact, skills=skills, availability=availability)
+        new_volunteer = Volunteer(
+            volunteer_id=new_staff.staff_id,
+            role=role,
+            start_date=date.today(),
+            end_date=None  # No end date for new volunteers
+        )
         db.session.add(new_volunteer)
         db.session.commit()
 
         return jsonify({
             "message": "Volunteer created successfully!",
-            "volunteer_id": new_volunteer.id,
-            "name": new_volunteer.name,
-            "contact": new_volunteer.contact,
-            "skills": new_volunteer.skills,
-            "availability": new_volunteer.availability
+            "volunteer_id": new_volunteer.volunteer_id,
+            "first_name": first_name,
+            "last_name": last_name,
+            "email": email,
+            "role": role
         }), 201
 
     except IntegrityError:

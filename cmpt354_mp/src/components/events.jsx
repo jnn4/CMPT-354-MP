@@ -78,7 +78,7 @@ function events(){
                         {event.rsvp ? (
                             <button className="items">Attending</button>
                         ) : (
-                            <button className="items">Available</button>
+                            <button className="items">Register</button>
                         )}
                     </li>
                 ))}
