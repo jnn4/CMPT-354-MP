@@ -25,6 +25,31 @@ def get_items():
         } for item in items
     ])
 
+
+def _build_cors_preflight_response():
+    response = jsonify({'message': 'CORS preflight'})
+    response.headers.add("Access-Control-Allow-Origin", "http://localhost:5173")
+    response.headers.add("Access-Control-Allow-Headers", "Content-Type")
+    response.headers.add("Access-Control-Allow-Methods", "DELETE, OPTIONS")
+    return response
+
+# delete item
+@items_bp.route('/delete/<int:item_id>', methods=['DELETE', 'OPTIONS'])
+def delete_item(item_id):
+    if request.method == 'OPTIONS':
+        return _build_cors_preflight_response()
+    try:
+        item = Item.query.get(item_id)
+        if not item:
+            return jsonify({"message": "Item not found"}), 404
+
+        db.session.delete(item)
+        db.session.commit()
+        return jsonify({"message": "Item deleted successfully!"}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
 # Borrow an item
 @items_bp.route('/borrow', methods=['POST'])
 def borrow_item():

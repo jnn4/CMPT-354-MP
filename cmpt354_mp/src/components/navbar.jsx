@@ -20,7 +20,7 @@ function Navbar() {
                     <li><a href="/manage-items">Manage Items</a></li>
                     <li><a href="/manage-events">Manage Events</a></li>
                     <li><a href="/donate">Manage Future Items</a></li>
-                    <li><a href="/help-request">Help Requests</a></li>
+                    <li><a href="/manage-help-requests">Help Requests</a></li>
                 </ul>
             </div>
         );

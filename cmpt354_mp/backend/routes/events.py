@@ -153,3 +153,58 @@ def unregister_event():
     except Exception as e:
         db.session.rollback()
         return jsonify({'message': str(e)}), 500
+
+
+# Create an event
+@events_bp.route('/create', methods=['POST'])
+def create_event():
+    data = request.json
+
+    room = Room.query.get(data['room_id'])
+    if not room:
+        return jsonify({"message": "Room not found"}), 404
+
+    try:
+        new_event = Event(
+            name=data['name'],
+            type=data['type'],
+            date=datetime.strptime(data['date'], '%Y-%m-%d').date(),
+            time=datetime.strptime(data['time'], '%H:%M').time(),
+            room_id=data['room_id'],
+            audience_type=data['audience_type']
+        )
+        
+        db.session.add(new_event)
+        db.session.commit()
+        
+        return jsonify({"message": "Event created successfully!", "event_id": new_event.event_id}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
+
+def _build_cors_preflight_response():
+    response = jsonify({'message': 'CORS preflight'})
+    response.headers.add("Access-Control-Allow-Origin", "http://localhost:5173")
+    response.headers.add("Access-Control-Allow-Headers", "Content-Type")
+    response.headers.add("Access-Control-Allow-Methods", "DELETE, OPTIONS")
+    return response
+
+# Delete an event
+@events_bp.route('/delete/<int:event_id>', methods=['DELETE', 'OPTIONS'])
+def delete_event(event_id):
+    if request.method == 'OPTIONS':
+        return _build_cors_preflight_response()
+
+    try:
+        event = Event.query.get(event_id)
+        if not event:
+            return jsonify({"message": "Event not found"}), 404
+
+        db.session.delete(event)
+        db.session.commit()
+        
+        return jsonify({"message": "Event deleted successfully!"}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500

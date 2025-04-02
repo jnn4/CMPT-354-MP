@@ -10,7 +10,7 @@ CORS(
     app,
     resources={r"/*": {
         "origins": "http://localhost:5173",  # Your frontend URL
-        "methods": ["GET", "POST", "OPTIONS", "PATCH"],
+        "methods": ["GET", "POST", "OPTIONS", "PATCH", "DELETE"],
         "allow_headers": ["Content-Type", "Authorization"],
         "supports_credentials": True  # For cookies/session
     }}
