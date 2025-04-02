@@ -2,6 +2,8 @@ from flask import Flask
 from flask_cors import CORS
 from extensions import db  # Import db from extensions
 from models import Person, User, Staff, Volunteer, Item, BorrowTransaction, Fine, Room, Event, RequestHelp, FutureItem
+from models import check_future_items, increase_overdue_fines
+import logging
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -48,12 +50,30 @@ app.register_blueprint(requests_help_bp, url_prefix='/requests_help')
 app.register_blueprint(volunteer_bp, url_prefix='/volunteer')
 app.register_blueprint(donate_bp, url_prefix='/donate')
 
-@app.cli.command("insert-test-data")
-def insert_test_data_command():
-    """Insert test data into the database"""
-    from insert_test_data import insert_test_data
-    insert_test_data()
-    print("Test data inserted!")
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+def configure_scheduler(app):
+    """Configure the scheduler in your Flask app"""
+    scheduler.init_app(app)
+
+    # Avoid duplicate jobs
+    existing_jobs = {job.id for job in scheduler.get_jobs()}
+    
+    if 'check_future_items' not in existing_jobs:
+        scheduler.add_job(id='check_future_items', func=check_future_items, 
+                          trigger='cron', hour=0, minute=0)
+        logger.info("Scheduled 'check_future_items' job.")
+
+    if 'increase_overdue_fines' not in existing_jobs:
+        scheduler.add_job(id='increase_overdue_fines', func=increase_overdue_fines, 
+                          trigger='cron', hour=0, minute=0)
+        logger.info("Scheduled 'increase_overdue_fines' job.")
+    
+    scheduler.start()
+    logger.info("Scheduler started successfully.")
+
 
 if __name__ == '__main__':
     app.run(debug=True, port=8000)

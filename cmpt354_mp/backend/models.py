@@ -1,6 +1,7 @@
 from extensions import db
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_apscheduler import APScheduler # for triggering tasks
 
 # ----- Base Entities -----
 class Person(db.Model):
@@ -137,3 +138,52 @@ class RequestHelp(db.Model):
 
     # Relationships
     user = db.relationship('User', backref=db.backref('help_requests'))
+
+# ----- Scheduler for Tasks (TRIGGERS) -----
+scheduler = APScheduler()
+
+def check_future_items():
+    """Moves items from future_item to item when arrival_date is reached"""
+    today = date.today()
+    
+    # Find items that have arrived
+    arrived_items = FutureItem.query.filter(FutureItem.arrival_date <= today).all()
+    
+    for future_item in arrived_items:
+        # Update associated item status to available
+        item = Item.query.get(future_item.item_id)
+        if item:
+            item.status = 'available'
+            
+        # Delete the future item record
+        db.session.delete(future_item)
+    
+    db.session.commit()
+
+def increase_overdue_fines():
+    """Increases fines by 10 when due_date is passed"""
+    today = date.today()
+    
+    # Find overdue transactions that haven't been returned
+    overdue_transactions = BorrowTransaction.query.filter(
+        db.func.date(BorrowTransaction.due_date) <= today, 
+        BorrowTransaction.return_date.is_(None)
+    ).all()
+    
+    for transaction in overdue_transactions:
+        # Look for existing fine
+        existing_fine = Fine.query.filter_by(trans_id=transaction.trans_id).first()
+        
+        if existing_fine:
+            # Increase existing fine by 35
+            existing_fine.amount += 35
+        else:
+            # Create new fine
+            new_fine = Fine(
+                trans_id=transaction.trans_id,
+                amount=35,
+                paid=False
+            )
+            db.session.add(new_fine)
+    
+    db.session.commit()
