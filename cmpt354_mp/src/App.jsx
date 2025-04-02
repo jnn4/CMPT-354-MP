@@ -32,12 +32,6 @@ function App() {
             <Route path="/userHome" element={<UserHome />} />
             <Route path="/events" element={<Events />} />
           </Routes>
-          
-          {/* Flask API Response */}
-          {/* <div className="api-response">
-            <h1>Flask + React (Vite JSX)</h1>
-            <p>{data ? data : "Loading..."}</p>
-          </div> */}
         </div>
       </div>
     </Router>

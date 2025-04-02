@@ -3,6 +3,9 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from models import Person
 from models import User
 from models import Staff
+from models import Item
+from models import BorrowTransaction
+
 from extensions import db
 from flask_cors import CORS  # Ensure CORS is imported
 
@@ -48,15 +51,22 @@ def login():
     data = request.get_json()
     user = User.query.filter_by(email=data['email']).first()
 
-    if not user or not user.check_password(data['password']):  # Use check_password() method
+    if not user or not check_password_hash(user.password_hash, data['password']):
         return jsonify({'message': 'Invalid credentials'}), 401
+
+    # Fetch additional details from Person table
+    person = Person.query.filter_by(email=user.email).first()
 
     return jsonify({
         'message': 'Login successful',
-        'name': f"{user.person.first_name} {user.person.last_name}",  # Get name from Person
         'email': user.email,
-        'role': 'user'  # Add role logic if needed
+        'role': 'staff' if isinstance(user, Staff) else 'user',  # Example role logic
+        'first_name': person.first_name,
+        'last_name': person.last_name,
+        'phone_num': person.phone_num,
+        'age': person.age
     }), 200
+
 
 @auth_bp.route('/login', methods=['OPTIONS'])
 def options_login():
@@ -65,5 +75,47 @@ def options_login():
 # Logout route
 @auth_bp.route('/logout', methods=['POST'])
 def logout():
+    # Clear session data (if using Flask sessions)
     session.clear()
-    return jsonify({'message': 'Logged out successfully'}), 200
+
+    # Respond with success message
+    return jsonify({"message": "Logged out successfully"}), 200
+
+# ---User Dashboard---
+@auth_bp.route('/dashboard', methods=['GET'])
+def get_user_dashboard():
+    email = request.args.get('email')
+    
+    # Join Person and User tables
+    user_data = db.session.query(Person, User).\
+        join(User, Person.email == User.email).\
+        filter(Person.email == email).first()
+    
+    if not user_data:
+        return jsonify({'message': 'User not found'}), 404
+    
+    person, user = user_data
+    
+    # Fetch borrowed items with a join
+    borrowed_items = db.session.query(Item, BorrowTransaction).\
+        join(BorrowTransaction, Item.item_id == BorrowTransaction.item_id).\
+        filter(BorrowTransaction.user_email == email).\
+        filter(BorrowTransaction.return_date == None).all()
+    
+    items_list = [{
+        'id': item.item_id,
+        'title': item.title,
+        'author': item.author,
+        'status': item.status
+    } for item, transaction in borrowed_items]
+    
+    return jsonify({
+        'user': {
+            'firstName': person.first_name,
+            'lastName': person.last_name,
+            'email': person.email
+        },
+        'borrowedItems': items_list,
+        'upcomingEvents': [],  # Add event query here
+        'volunteeringPosition': None  # Add volunteer query here
+    }), 200

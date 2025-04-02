@@ -19,15 +19,22 @@ function Login() {
                     password: password
                 }),
             });
-
+    
             const data = await response.json();
             
             if (response.ok) {
                 console.log('Login successful', data);
-                // Store user data and redirect
-                localStorage.setItem('userEmail', email);
-                localStorage.setItem('userRole', data.role);  // Assuming backend returns role
-                window.location.href = data.role === 'staff' ? '/staff-dashboard' : '/user-dashboard';
+                
+                // Store user data in localStorage
+                localStorage.setItem('userEmail', data.email);
+                localStorage.setItem('userFirstName', data.first_name);
+                localStorage.setItem('userLastName', data.last_name);
+                localStorage.setItem('userPhoneNum', data.phone_num);
+                localStorage.setItem('userAge', data.age);
+                localStorage.setItem('userRole', data.role);
+    
+                // Redirect based on role
+                window.location.href = data.role === 'staff' ? '/staff-dashboard' : '/userHome';
             } else {
                 setErrorMessage(data.message || 'Invalid email or password');
             }
@@ -35,7 +42,7 @@ function Login() {
             console.error('Login error:', error);
             setErrorMessage('Unable to connect to server. Please try again.');
         }
-    };
+    };    
 
     return (
         <div className="content">
