@@ -2,47 +2,76 @@ import React, { useEffect, useState } from 'react';
 import '../App.css';
 
 function userHome() {
-    const user = JSON.parse(localStorage.getItem('loggedInUser'));
+    const [user, setUser] = useState(null);
     const [volunteerInfo, setVolunteerInfo] = useState(null);
     const [registeredEvents, setRegisteredEvents] = useState([]);
     const [error, setError] = useState('');
 
     useEffect(() => {
-        // Fetch volunteer information for the current user
-        fetch(`http://localhost:8000/volunteer/`, {
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            // Find the volunteer entry for the current user
-            const userVolunteer = data.find(v => v.email === user.email);
-            if (userVolunteer) {
-                setVolunteerInfo(userVolunteer);
-            }
-        })
-        .catch(error => {
-            console.error('Error fetching volunteer info:', error);
-            setError('Failed to load volunteer information');
-        });
+        // Get user from localStorage
+        const userData = localStorage.getItem('loggedInUser');
+        if (!userData) {
+            setError('Please log in to view your dashboard');
+            return;
+        }
 
-        // Fetch user's registered events
-        fetch(`http://localhost:8000/events/user/${user.user_id}`)
+        try {
+            const parsedUser = JSON.parse(userData);
+            setUser(parsedUser);
+
+            // Fetch volunteer information for the current user
+            fetch(`http://localhost:8000/volunteer/`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }
+            })
             .then(response => response.json())
             .then(data => {
-                setRegisteredEvents(data);
+                // Find the volunteer entry for the current user
+                const userVolunteer = data.find(v => v.email === parsedUser.email);
+                if (userVolunteer) {
+                    setVolunteerInfo(userVolunteer);
+                }
             })
             .catch(error => {
-                console.error('Error fetching registered events:', error);
-                setError('Failed to load registered events');
+                console.error('Error fetching volunteer info:', error);
+                setError('Failed to load volunteer information');
             });
-    }, [user.email, user.user_id]);
+
+            // Fetch user's registered events
+            fetch(`http://localhost:8000/events/user/${parsedUser.user_id}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch registered events');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    setRegisteredEvents(data);
+                })
+                .catch(error => {
+                    console.error('Error fetching registered events:', error);
+                    setError('Failed to load registered events');
+                });
+        } catch (error) {
+            console.error('Error parsing user data:', error);
+            setError('Error loading user data');
+        }
+    }, []);
+
+    if (!user) {
+        return (
+            <div className='content'>
+                <h1>Error</h1>
+                <p>{error}</p>
+            </div>
+        );
+    }
 
     return (
         <div className='content'>
-            <h1>Hi {user.name}</h1>
+            <h1>Hi {user.email}</h1>
             <p>This is the user dashboard</p>
             
             {/* Volunteer Position Section */}
