@@ -1,24 +1,94 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './navbar.css';
 
-function navbar(){
+function Navbar() {
     const [current, setCurrent] = useState('home');
+    const [user, setUser] = useState(null);
+    const navigate = useNavigate();
 
+    useEffect(() => {
+        // Check if user is logged in
+        const loggedInUser = localStorage.getItem('loggedInUser');
+        if (loggedInUser) {
+            setUser(JSON.parse(loggedInUser));
+        }
+    }, []);
 
-    return(
+    const handleLogout = async () => {
+        try {
+            // Call logout endpoint
+            const response = await fetch('http://localhost:8000/auth/logout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include' // Include credentials for session handling
+            });
+            
+            if (!response.ok) {
+                throw new Error('Logout failed');
+            }
+            
+            // Clear user data from localStorage
+            localStorage.removeItem('loggedInUser');
+            setUser(null);
+            
+            // Navigate to login page
+            navigate('/login');
+        } catch (error) {
+            console.error('Error during logout:', error);
+            alert('Error during logout. Please try again.');
+        }
+    };
+
+    return (
         <div className="sidebar">
-            <ul>
-                <li><a href="/">Home</a></li>
-                <li><a href="/items">Items</a></li>
-                <li><a href="/events">Events</a></li>
-                <li><a href="/personnel">Personnel</a></li>
-                <li><a href="/volunteer">Volunteer</a></li>
-                <li><a href="/donate">Donate</a></li>
-                <li><a href="/contact">Contact</a></li>
-                <li>Log out</li>
-            </ul>
+            {user ? (
+                // Logged in user view
+                <>
+                    <div className="user-info">
+                        <p>Welcome, {user.name}</p>
+                        <p className="role">{user.role === 'staff' ? 'Staff Member' : 'User'}</p>
+                    </div>
+                    <ul>
+                        {/* <li><a href="/">Home</a></li> */}
+                        <li><a href="/userHome">User Home</a></li>
+                        <li><a href="/items">Items</a></li>
+                        <li><a href="/events">Events</a></li>
+                        {user.role === 'staff' && (
+                            <>
+                                <li><a href="/personnel">Personnel</a></li>
+                                <li><a href="/manage-items">Manage Items</a></li>
+                                <li><a href="/manage-events">Manage Events</a></li>
+                                <li><a href="/manage-fines">Manage Fines</a></li>
+                            </>
+                        )}
+                        <li><a href="/volunteer">Volunteer</a></li>
+                        <li><a href="/donate">Donate</a></li>
+                        <li><a href="/contact">Contact</a></li>
+                        <li onClick={handleLogout} style={{ cursor: 'pointer' }}>Log out</li>
+                    </ul>
+                </>
+            ) : (
+                // Not logged in view
+                <>
+                    <div className="user-info">
+                        <p>Welcome to Library</p>
+                        <p className="role">Please log in to continue</p>
+                    </div>
+                    <ul>
+                        <li><a href="/">Home</a></li>
+                        <li><a href="/items">Browse Items</a></li>
+                        <li><a href="/events">View Events</a></li>
+                        <li><a href="/contact">Contact Us</a></li>
+                        <li><a href="/login" style={{ color: '#4CAF50', fontWeight: 'bold' }}>Login</a></li>
+                        <li><a href="/signup" style={{ color: '#2196F3', fontWeight: 'bold' }}>Sign Up</a></li>
+                    </ul>
+                </>
+            )}
         </div>
     );
 }
 
-export default navbar;
+export default Navbar;

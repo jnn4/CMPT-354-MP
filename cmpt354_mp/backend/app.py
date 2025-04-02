@@ -7,11 +7,14 @@ from models import Person, User, Staff, Volunteer, Room, Event, Audience, Item, 
 # Initialize Flask app
 app = Flask(__name__)
 
-CORS(app, resources={r"/*": {
-    "origins": "http://localhost:5173",
-    "methods": ["GET", "POST", "OPTIONS", "PATCH"],  # fixes the CORs requests magically!
-    "allow_headers": ["Content-Type", "Authorization"]
-}})
+# Configure CORS
+CORS(app, resources={
+    r"/*": {
+        "origins": "http://localhost:5173",
+        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization"]
+    }
+})
 
 # Config
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///library.db'
@@ -44,11 +47,10 @@ from routes.audience import audience_bp
 # Register blueprints (/routes)
 app.register_blueprint(auth_bp, url_prefix='/auth')
 app.register_blueprint(dashboard_bp)
-
 app.register_blueprint(items_bp, url_prefix='/items')
 app.register_blueprint(user_bp, url_prefix='/user')
 app.register_blueprint(staff_bp, url_prefix='/staff')
-app.register_blueprint(events_bp, url_prefix='/events')
+app.register_blueprint(events_bp)
 app.register_blueprint(rooms_bp, url_prefix='/rooms')
 app.register_blueprint(transactions_bp, url_prefix='/transactions')
 app.register_blueprint(requests_help_bp, url_prefix='/requests_help')

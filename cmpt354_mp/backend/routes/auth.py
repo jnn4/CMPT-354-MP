@@ -1,8 +1,8 @@
 # auth.py handles the login, sign up, logout and dashboard updates.
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, session
 from werkzeug.security import generate_password_hash, check_password_hash
 from models import Person, User, Staff, Volunteer, Item, FutureItem, donates, RequestHelp
-from models import BorrowTransaction, Fine
+from models import BorrowTransaction, Fines
 from models import Event, attends
 from datetime import datetime
 
@@ -31,34 +31,41 @@ def signup():
     if Person.query.filter_by(email=data['email']).first():
         return jsonify({'message': 'Email already registered'}), 400
 
-    # Create a new Person record
-    new_person = Person(
-        email=data['email'],
-        first_name=data['first_name'],
-        last_name=data['last_name'],
-        phone_num=data.get('phone_num'),
-        age=data.get('age')
-    )
-    db.session.add(new_person)
-    db.session.commit()  # Commit to generate person.email for foreign keys
+    try:
+        # Create a new Person record
+        new_person = Person(
+            email=data['email'],
+            first_name=data['first_name'],
+            last_name=data['last_name'],
+            phone_num=data.get('phone_num'),
+            age=data.get('age')
+        )
+        db.session.add(new_person)
+        db.session.commit()  # Commit to generate person.email for foreign keys
 
-    # Create User entry (always, regardless of role)
-    new_user = User(
-        email=new_person.email
-    )
-    new_user.set_password(data['password'])
-    db.session.add(new_user)
+        # Hash the password
+        hashed_password = generate_password_hash(data['password'])
 
-    # Create Staff/User specific entry
-    role = data['role'].lower()
-    
-    if role == 'staff':
-        new_staff = Staff(email=new_person.email)
-        db.session.add(new_staff)
+        # Create User entry (always, regardless of role)
+        new_user = User(
+            email=new_person.email,
+            password=hashed_password  # Store the hashed password
+        )
+        db.session.add(new_user)
 
-    db.session.commit()
+        # Create Staff/User specific entry
+        role = data['role'].lower()
+        
+        if role == 'staff':
+            new_staff = Staff(email=new_person.email)
+            db.session.add(new_staff)
 
-    return jsonify({'message': f'Successfully registered as {role}'}), 201
+        db.session.commit()
+        return jsonify({'message': f'Successfully registered as {role}'}), 201
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': f'Error during registration: {str(e)}'}), 500
 
 
 # Login route
@@ -67,7 +74,7 @@ def login():
     data = request.get_json()
     user = User.query.filter_by(email=data['email']).first()
 
-    if not user or not check_password_hash(user.password_hash, data['password']):
+    if not user or not check_password_hash(user.password, data['password']):
         return jsonify({'message': 'Invalid credentials'}), 401
 
     # Fetch additional details from Person table
@@ -79,7 +86,7 @@ def login():
     return jsonify({
         'message': 'Login successful',
         'email': user.email,
-        'role': 'staff' if is_staff else 'user',  # Fixed role check
+        'role': 'staff' if is_staff else 'user',
         'first_name': person.first_name,
         'last_name': person.last_name,
         'phone_num': person.phone_num,
@@ -93,11 +100,15 @@ def options_login():
 # Logout route
 @auth_bp.route('/logout', methods=['POST'])
 def logout():
-    # Clear session data (if using Flask sessions)
-    session.clear()
-
-    # Respond with success message
-    return jsonify({"message": "Logged out successfully"}), 200
+    try:
+        # Clear session data
+        session.clear()
+        
+        # Respond with success message
+        return jsonify({"message": "Logged out successfully"}), 200
+    except Exception as e:
+        print(f"Error during logout: {str(e)}")
+        return jsonify({"message": "Error during logout"}), 500
 
 # ---User Dashboard---
 @auth_bp.route('/dashboard', methods=['GET'])
@@ -136,8 +147,8 @@ def get_user_dashboard():
     } for item, transaction in borrowed_items]
 
     # Fetch fines with item and transaction details
-    fines = db.session.query(Fine, BorrowTransaction, Item)\
-        .join(BorrowTransaction, Fine.trans_id == BorrowTransaction.trans_id)\
+    fines = db.session.query(Fines, BorrowTransaction, Item)\
+        .join(BorrowTransaction, Fines.trans_id == BorrowTransaction.trans_id)\
         .join(Item, BorrowTransaction.item_id == Item.item_id)\
         .filter(BorrowTransaction.user_email == email)\
         .all()
@@ -262,3 +273,30 @@ def get_staff_dashboard():
         'wage': staff.wage,
         # Add other staff-specific fields if needed
     }), 200
+
+@auth_bp.route('/populate_test_user', methods=['POST'])
+def populate_test_user():
+    try:
+        # Create Person record
+        new_person = Person(
+            email="alice@example.com",
+            first_name="Alice",
+            last_name="Johnson",
+            phone_num="123-456-7890",
+            age=28
+        )
+        db.session.add(new_person)
+        db.session.commit()
+
+        # Create User record
+        new_user = User(
+            email="alice@example.com"
+        )
+        new_user.set_password("password123")
+        db.session.add(new_user)
+        db.session.commit()
+
+        return jsonify({"message": "Test user created successfully"}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": "Failed to create test user", "error": str(e)}), 500

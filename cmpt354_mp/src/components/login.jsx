@@ -1,10 +1,12 @@
 import '../App.css';
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 function Login() {
-    const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
+    const navigate = useNavigate();
 
     // Handle form submit
     const handleSubmit = async (event) => {
@@ -17,7 +19,7 @@ function Login() {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    email: username,
+                    email: email,
                     password: password
                 }),
             });
@@ -27,13 +29,17 @@ function Login() {
             if (response.status === 200) {
                 console.log('Login successful', data);
 
-                // Store user info in localStorage
+                // Store user info in localStorage with role
                 localStorage.setItem('loggedInUser', JSON.stringify({
-                    name: data.name,  // Now storing the name
-                    email: data.email
+                    name: `${data.first_name} ${data.last_name}`,
+                    email: data.email,
+                    role: data.role,
+                    phone_num: data.phone_num,
+                    age: data.age
                 }));
                 
-                window.location.href = '/userHome';
+                // Navigate to home page
+                navigate('/');
             } else {
                 // Show error message if login fails
                 setErrorMessage(data.message || 'Invalid credentials');
@@ -46,39 +52,36 @@ function Login() {
 
     return (
         <div className="content">
-            <h1>Login</h1>
             <div className="container">
-                <div className="box">
-                    <form onSubmit={handleSubmit}>
-                        <label>Email: </label>
-                        <br />
-                        <input
-                            type="text"
-                            className="rounded-textbox"
-                            id="username"
-                            name="username"
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
-                            required
-                        />
-                        <br />
-                        <br />
-                        <label>Password: </label>
-                        <br />
-                        <input
-                            type="password"
-                            className="rounded-textbox"
-                            id="password"
-                            name="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                        />
-                        <br />
-                        <button type="submit">Login</button>
-                    </form>
-                    {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
-                    <p>Don't have an account? <a href="/signup">[Sign Up]</a></p>
+                <div className="form-wrapper">
+                    <h1>Login</h1>
+                    <div className="box">
+                        <form onSubmit={handleSubmit}>
+                            <label>Email: </label>
+                            <input
+                                type="email"
+                                className="rounded-textbox"
+                                id="email"
+                                name="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                required
+                            />
+                            <label>Password: </label>
+                            <input
+                                type="password"
+                                className="rounded-textbox"
+                                id="password"
+                                name="password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                required
+                            />
+                            <button type="submit">Login</button>
+                        </form>
+                        {errorMessage && <p className="error-message">{errorMessage}</p>}
+                        <p className="login-link">Don't have an account? <a href="/signup">Sign Up</a></p>
+                    </div>
                 </div>
             </div>
         </div>
