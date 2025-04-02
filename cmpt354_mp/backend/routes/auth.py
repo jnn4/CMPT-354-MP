@@ -57,7 +57,14 @@ def signup():
         role = data['role'].lower()
         
         if role == 'staff':
-            new_staff = Staff(email=new_person.email)
+            if 'position' not in data or 'wage' not in data:
+                return jsonify({'message': 'Position and wage are required for staff registration'}), 400
+            new_staff = Staff(
+                email=new_person.email,
+                position=data['position'],
+                wage=data['wage'],
+                password=hashed_password  # Add the hashed password to staff record
+            )
             db.session.add(new_staff)
 
         db.session.commit()

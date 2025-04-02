@@ -10,7 +10,9 @@ function Signup() {
         password: '',
         phone_num: '',
         age: '',
-        role: 'user'
+        role: 'user',
+        position: '',
+        wage: ''
     });
     const [errorMessage, setErrorMessage] = useState('');
     const navigate = useNavigate();
@@ -127,6 +129,31 @@ function Signup() {
                                 <option value="user">User</option>
                                 <option value="staff">Staff</option>
                             </select>
+                            {formData.role === 'staff' && (
+                                <>
+                                    <label>Position: </label>
+                                    <input
+                                        type="text"
+                                        className="rounded-textbox"
+                                        id="position"
+                                        name="position"
+                                        value={formData.position}
+                                        onChange={handleChange}
+                                        required
+                                    />
+                                    <label>Wage: </label>
+                                    <input
+                                        type="number"
+                                        className="rounded-textbox"
+                                        id="wage"
+                                        name="wage"
+                                        value={formData.wage}
+                                        onChange={handleChange}
+                                        min="0"
+                                        required
+                                    />
+                                </>
+                            )}
                             <button type="submit">Sign Up</button>
                         </form>
                         {errorMessage && <p className="error-message">{errorMessage}</p>}
