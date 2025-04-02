@@ -5,31 +5,48 @@ import { useEffect, useState } from 'react';
 function events(){
     const [events, setEvents] = useState([]);
     const [searchText, setSearchText] = useState('');
+    const [eventsPopulated, setEventsPopulated] = useState(false);
 
     // Fetch books from Flask API  
     useEffect(() => {
-        fetch("http://localhost:8000/api/events")
+        fetch("http://localhost:8000/events/")
             .then((response) => response.json()) // Convert response to JSON
             .then((data) => setEvents(data)) // Store the data in state
             .catch((error) => console.error("Error:", error));
     }, []);
 
-    window.onload = function() {
-        fetch('http://localhost:8000/api/events/populate_events', {
+    // window.onload = function() {
+    //     fetch('http://localhost:8000/events/populate_events', {
+    //         method: 'POST',
+    //     })
+    //     .then(response => response.json())
+    //     .then(data => console.log("Book added:", data))
+    //     .catch(error => console.error('Error:', error));
+    // };
+
+    const populateEvents = () => {
+        if (eventsPopulated) return; // Prevents re-population if already done
+
+        fetch('http://localhost:8000/events/populate_events', {
             method: 'POST',
         })
-        .then(response => response.json())
-        .then(data => console.log("Book added:", data))
-        .catch(error => console.error('Error:', error));
+            .then(response => response.json())
+            .then(data => {
+            console.log("Event populated:", data);
+            setEventsPopulated(true);
+            })
+            .catch(error => console.error('Error populating event:', error));
     };
-    
 
-    const filteredEvents = events.filter(
-        (event) =>
-            event.title.toLowerCase().includes(searchText.toLowerCase()) ||
-            event.description.toLowerCase().includes(searchText.toLowerCase()) ||
-            (event.date && event.date.toString().includes(searchText))
-    );
+    const filteredEvents = events.filter((event) => {
+        const title = event.title ? event.title.toLowerCase() : ""; 
+        const description = event.description ? event.description.toLowerCase() : ""; 
+        const eventDate = event.date ? event.date.toString() : ""; 
+    
+        return title.includes(searchText.toLowerCase()) ||
+               description.includes(searchText.toLowerCase()) ||
+               eventDate.includes(searchText);
+    });
 
     return (
         <div className="content">
@@ -52,9 +69,9 @@ function events(){
             <button className="items">Type</button>
 
             <ul className="items">
-                {filteredEvents.map((event) => (
+                {filteredEvents.map((event, index) => (
                     <li className="items" key={event.id}>
-                        {event.title} by {event.description} ({event.date})
+                        {event.name}: {event.description} ({event.date})
                         {event.rsvp ? (
                             <button className="items">Attending</button>
                         ) : (
@@ -66,6 +83,9 @@ function events(){
                     <li className="items">No results found</li>
                 )}
             </ul>
+
+            {/* Optional: Button to populate items (just for testing) */}
+            <button onClick={populateEvents} className="items">Populate Events</button>
         </div>
     )
 }

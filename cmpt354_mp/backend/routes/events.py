@@ -1,12 +1,13 @@
 from flask import Blueprint, request, jsonify
 from extensions import db
 from models import Event
+from datetime import date, time
 
 # Create a Blueprint for events
 events_bp = Blueprint('events', __name__, url_prefix='/events')
 
 # Get all events
-@events_bp.route('/events/', methods=['GET'])
+@events_bp.route('/', methods=['GET'])
 def get_events():
     events = Event.query.all()
     events_list = [{
@@ -21,7 +22,7 @@ def get_events():
     return jsonify(events_list), 200
 
 # Get a specific event by ID
-@events_bp.route('/events/<int:event_id>', methods=['GET'])
+@events_bp.route('/<int:event_id>', methods=['GET'])
 def get_event(event_id):
     event = Event.query.get(event_id)
     if event:
@@ -37,7 +38,7 @@ def get_event(event_id):
     return jsonify({'error': 'Event not found'}), 404
 
 # Create a new event
-@events_bp.route('/events/', methods=['POST'])
+@events_bp.route('/', methods=['POST'])
 def create_event():
     data = request.get_json()
     new_event = Event(
@@ -53,7 +54,7 @@ def create_event():
     return jsonify({'message': 'Event created successfully', 'event_id': new_event.event_id}), 201
 
 # Update an existing event
-@events_bp.route('/events/<int:event_id>', methods=['PUT'])
+@events_bp.route('/<int:event_id>', methods=['PUT'])
 def update_event(event_id):
     event = Event.query.get(event_id)
     if not event:
@@ -71,7 +72,7 @@ def update_event(event_id):
     return jsonify({'message': 'Event updated successfully'}), 200
 
 # Delete an event
-@events_bp.route('/events/<int:event_id>', methods=['DELETE'])
+@events_bp.route('/<int:event_id>', methods=['DELETE'])
 def delete_event(event_id):
     event = Event.query.get(event_id)
     if not event:
@@ -82,11 +83,9 @@ def delete_event(event_id):
     return jsonify({'message': 'Event deleted successfully'}), 200
 
 # Populate the database with sample data
-@events_bp.route('/events/populate_events', methods=['POST'])
+@events_bp.route('/populate_events', methods=['POST'])
 def populate_events():
     try:
-        from datetime import date, time
-
         events_data = [
             {
                 "name": "Python Programming Workshop",
@@ -170,19 +169,12 @@ def populate_events():
             }
         ]
 
-        for event in events_data:
-            new_event = Event(
-                name=event["name"],
-                event_type=event["event_type"],
-                description=event["description"],
-                date=event["date"],
-                time=event["time"],
-                room_id=event["room_id"]
-            )
-            db.session.add(new_event)
+        for events_data in events_data:
+            event = Event(**events_data)
+            db.session.add(event)
 
         db.session.commit()
-        return jsonify({"message": "Events populated successfully!"}), 201
+        return jsonify({"message": "Events populated successfully!"}), 200
     except Exception as e:
         db.session.rollback()
         return jsonify({"message": str(e)}), 500

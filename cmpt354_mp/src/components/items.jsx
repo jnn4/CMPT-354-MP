@@ -93,7 +93,7 @@ const populateItems = () => {
       {filteredItems.map((item) => (
           <li className="items" key={item.id}>
             {item.title} by {item.author} ({item.year_published})
-            {item.borrowed ? (
+            {item.borrowed === "borrowed" ? (
               <button className="items" onClick={() => handleReturnItem(item.id)}>
                 Return
               </button>

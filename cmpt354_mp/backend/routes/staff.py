@@ -7,7 +7,7 @@ from werkzeug.security import generate_password_hash
 staff_bp = Blueprint('staff', __name__, url_prefix='/staff')
 
 # Get all staff members
-@staff_bp.route('/staff/', methods=['GET'])
+@staff_bp.route('/', methods=['GET'])
 def get_all_staff():
     staff = Staff.query.all()
     return jsonify([{
@@ -18,7 +18,7 @@ def get_all_staff():
     } for s in staff]), 200
 
 # Get a specific staff member by ID
-@staff_bp.route('/staff/<int:staff_id>', methods=['GET'])
+@staff_bp.route('/<int:staff_id>', methods=['GET'])
 def get_staff(staff_id):
     staff = Staff.query.get(staff_id)
     if not staff:
@@ -31,7 +31,7 @@ def get_staff(staff_id):
     }), 200
 
 # Create a new staff member
-@staff_bp.route('/staff/', methods=['POST'])
+@staff_bp.route('/post', methods=['POST'])
 def create_staff():
     data = request.json
     if not all(k in data for k in ('email', 'position', 'wage')):
@@ -72,7 +72,7 @@ def delete_staff(staff_id):
     return jsonify({'message': 'Staff member deleted successfully'}), 200
 
 # Populate staff member table
-@staff_bp.route("/staff/populate_staff", methods=['POST'])
+@staff_bp.route("/populate_staff", methods=['POST'])
 def populate_staff():
     try:
         staff_data = [

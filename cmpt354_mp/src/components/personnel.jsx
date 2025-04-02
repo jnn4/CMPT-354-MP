@@ -7,7 +7,7 @@ function personnel() {
 
     // Fetch personnel from Flask API
     useEffect(() => {
-        fetch("http://localhost:8000/api/staff")
+        fetch("http://localhost:8000/staff/")
             .then((response) => response.json()) // Convert response to JSON
             .then((data) => setPersonnel(data)) // Store the data in state
             .catch((error) => console.error("Error:", error));
@@ -15,7 +15,7 @@ function personnel() {
 
     // Function to add a personnel
     window.onload = function() {
-        fetch('http://localhost:8000/api/staff/populate_staff', {
+        fetch('http://localhost:8000/staff/populate_staff', {
             method: 'POST',
         })
         .then(response => response.json())
