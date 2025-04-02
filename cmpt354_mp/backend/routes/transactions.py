@@ -9,33 +9,43 @@ transactions_bp = Blueprint('transactions', __name__, url_prefix='/transactions'
 def create_transaction():
     try:
         data = request.get_json()
-
+        
         # Extract necessary data from the request
         user_id = data.get('user_id')
         item_id = data.get('item_id')
         borrow_date = data.get('borrow_date')
         due_date = data.get('due_date')
+        return_date = data.get('return_date')
 
         # Validation
         if not user_id or not item_id or not borrow_date or not due_date:
-            return jsonify({"message": "User ID, Item ID, Borrow Date, and Due Date are required!"}), 400
+            return jsonify({
+                "message": "Missing required fields",
+                "required": ["user_id", "item_id", "borrow_date", "due_date"],
+                "received": data
+            }), 400
 
+        # Check if user exists
         user = User.query.get(user_id)
+        if not user:
+            return jsonify({"message": f"User with ID {user_id} not found"}), 404
+
+        # Check if item exists
         item = Item.query.get(item_id)
+        if not item:
+            return jsonify({"message": f"Item with ID {item_id} not found"}), 404
 
-        if not user or not item:
-            return jsonify({"message": "User or Item not found!"}), 404
-
-        # Convert ISO date strings to Python datetime objects
-        borrowed_at = datetime.fromisoformat(borrow_date.replace('Z', '+00:00'))
-        returned_at = datetime.fromisoformat(due_date.replace('Z', '+00:00'))
+        # Check if item is already borrowed
+        if item.status == "borrowed":
+            return jsonify({"message": "Item is already borrowed"}), 400
 
         # Create and add the new borrow transaction to the database
         new_transaction = BorrowTransaction(
-            borrowed_at=borrowed_at,
-            returned_at=returned_at,
             user_id=user_id,
-            item_id=item_id
+            item_id=item_id,
+            borrow_date=datetime.fromisoformat(borrow_date.replace('Z', '+00:00')),
+            due_date=datetime.fromisoformat(due_date.replace('Z', '+00:00')),
+            return_date=datetime.fromisoformat(return_date.replace('Z', '+00:00')) if return_date else None
         )
 
         db.session.add(new_transaction)
@@ -47,12 +57,16 @@ def create_transaction():
             "user_id": user_id,
             "item_id": item_id,
             "borrow_date": borrow_date,
-            "due_date": due_date
+            "due_date": due_date,
+            "return_date": return_date
         }), 201
 
+    except ValueError as e:
+        db.session.rollback()
+        return jsonify({"message": f"Invalid date format: {str(e)}"}), 400
     except Exception as e:
         db.session.rollback()
-        return jsonify({"message": str(e)}), 500
+        return jsonify({"message": f"Failed to create transaction: {str(e)}"}), 500
 
 # Get all borrow transactions
 @transactions_bp.route('/', methods=['GET'])

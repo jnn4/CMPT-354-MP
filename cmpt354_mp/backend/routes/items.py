@@ -1,6 +1,5 @@
 from flask import Blueprint, jsonify, request
-from models import db, Item, User, BorrowTransaction
-from datetime import datetime, timedelta
+from models import db, Item
 
 items_bp = Blueprint('items', __name__)
 
@@ -78,61 +77,23 @@ def populate_items():
         print(f"Error: {e}")  # Logs the error in your terminal
         return jsonify({"message": "Failed to populate Items", "error": str(e)}), 500
 
-# Borrow an item
-@items_bp.route('/borrow', methods=['POST'])
-def borrow_item():
-    data = request.json
-    print("Received data:", data)  # Log incoming request data
+# Borrow a Item by its ID
+@items_bp.route('/items/borrow/<int:id>', methods=['PATCH'])
+def borrow_item(id):
+    item = Item.query.get(id)
+    if not item:
+        return jsonify({"message": "Item not found"}), 404
 
-    # Extract fields
-    item_id = data.get('item_id')
-    user_email = data.get('user_email')
+    if item.borrowed:
+        return jsonify({"message": "This item is already borrowed"}), 400
 
-    # Log extracted fields
-    print(f"item_id: {item_id}, user_email: {user_email}")
+    item.borrowed = True
+    db.session.commit()
 
-    # Query for item and user
-    item = Item.query.get(item_id)
-    user = User.query.filter_by(email=user_email).first()
-
-    # Log query results
-    print("Queried Item:", item)
-    print("Queried User:", user)
-
-    if not item or not user:
-        return jsonify({"message": "Item or user not found"}), 404
-
-    if item.status != 'available':
-        return jsonify({"message": "Item not available"}), 400
-
-    try:
-        # Calculate due date (14 days from now)
-        due_date = datetime.utcnow() + timedelta(days=14)
-        
-        new_transaction = BorrowTransaction(
-            user_id=user.user_id,
-            item_id=item_id,
-            borrowed_at=datetime.utcnow(),
-            returned_at=due_date  # This will be the due date
-        )
-        db.session.add(new_transaction)
-        item.status = 'borrowed'
-        db.session.commit()
-
-        return jsonify({
-            "message": "Item borrowed successfully",
-            "item": {
-                "item_id": item.item_id,
-                "title": item.title,
-                "type": item.type.lower(),
-                "status": item.status,
-                "due_date": due_date.isoformat()
-            }
-        }), 200
-    except Exception as e:
-        db.session.rollback()
-        print(f"Error during borrowing: {e}")  # Log exception details
-        return jsonify({"message": str(e)}), 500
+    return jsonify({
+        "message": "Item borrowed successfully",
+        "item": {"id": item.id, "title": item.title}
+    }), 200
 
 # Return a borrowed Item by its ID
 @items_bp.route('/item/return/<int:id>', methods=['PATCH'])

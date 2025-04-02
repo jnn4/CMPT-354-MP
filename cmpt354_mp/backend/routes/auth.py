@@ -85,7 +85,6 @@ def login():
 
     return jsonify({
         'message': 'Login successful',
-        'user_id': user.user_id,
         'email': user.email,
         'role': 'staff' if is_staff else 'user',
         'first_name': person.first_name,

@@ -46,21 +46,45 @@ const populateItems = () => {
       return;
     }
 
-    // Create the borrow transaction and update item status in one request
-    fetch('http://localhost:8000/items/borrow', {
+    const borrowDate = new Date().toISOString();
+    const dueDate = new Date();
+    dueDate.setDate(dueDate.getDate() + 14); // Set due date to 14 days from now
+
+    // First create the transaction
+    fetch('http://localhost:8000/transactions/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
+        user_id: user.id,
         item_id: itemId,
-        user_email: user.email
+        borrow_date: borrowDate,
+        due_date: dueDate.toISOString(),
+        return_date: null  // Add this field as it's expected by the backend
       })
     })
     .then(response => {
       if (!response.ok) {
-        return response.json().then(err => {
-          throw new Error(err.message || 'Failed to borrow item');
+        return response.json().then(data => {
+          throw new Error(data.message || 'Failed to create transaction');
+        });
+      }
+      return response.json();
+    })
+    .then(data => {
+      if (data.message === "Transaction created successfully!") {
+        // Then update the item status
+        return fetch(`http://localhost:8000/items/borrow/${itemId}`, { 
+          method: 'PATCH' 
+        });
+      }
+      throw new Error(data.message || 'Failed to create transaction');
+    })
+    .then(response => {
+      if (!response.ok) {
+        return response.json().then(data => {
+          throw new Error(data.message || 'Failed to update item status');
         });
       }
       return response.json();
@@ -69,8 +93,9 @@ const populateItems = () => {
       if (data.message === "Item borrowed successfully") {
         // Update state to reflect borrowed item
         setItems(items.map(item =>
-          item.id === itemId ? { ...item, status: 'borrowed' } : item
+          item.id === itemId ? { ...item, borrowed: true } : item
         ));
+        alert('Item borrowed successfully!');
       }
     })
     .catch(error => {
@@ -81,32 +106,17 @@ const populateItems = () => {
 
   // Function that handles item return
   const handleReturnItem = (itemId) => {
-    const user = JSON.parse(localStorage.getItem('loggedInUser'));
-    if (!user) {
-      alert('Please log in to return items');
-      return;
-    }
-
-    // First update the item status
-    fetch(`http://localhost:8000/items/item/return/${itemId}`, { 
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        status: 'available'
+    fetch(`http://localhost:8000/items/return/${itemId}`, { method: 'PATCH' })
+      .then(response => response.json())
+      .then(data => {
+        if (data.message === "Item returned successfully") {
+          // Update state to reflect returned item
+          setItems(items.map(item =>
+            item.id === itemId ? { ...item, borrowed: false } : item
+          ));
+        }
       })
-    })
-    .then(response => response.json())
-    .then(data => {
-      if (data.message === "Item returned successfully") {
-        // Update state to reflect returned item
-        setItems(items.map(item =>
-          item.id === itemId ? { ...item, status: 'available' } : item
-        ));
-      }
-    })
-    .catch(error => console.error('Error returning item:', error));
+      .catch(error => console.error('Error returning item:', error));
   };
 
 
@@ -134,7 +144,7 @@ const populateItems = () => {
       {filteredItems.map((item) => (
           <li className="items" key={item.id}>
             {item.title} by {item.author} ({item.year_published})
-            {item.status === "borrowed" ? (
+            {item.borrowed === "borrowed" ? (
               <button className="items" onClick={() => handleReturnItem(item.id)}>
                 Return
               </button>

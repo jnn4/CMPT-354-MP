@@ -114,7 +114,7 @@ class BorrowTransaction(db.Model):
     trans_id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'))  # Reference to 'user' table
     item_id = db.Column(db.Integer, db.ForeignKey('item.item_id'))  # Reference to 'item' table
-    borrowed_at = db.Column(db.DateTime, default=datetime.utcnow)
+    borrowed_at = db.Column(db.DateTime, default=datetime)
     returned_at = db.Column(db.DateTime, nullable=True)  # Add this field
 
     #user = db.relationship('User', backref=db.backref('borrow_transactions', uselist=False))

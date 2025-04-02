@@ -5,7 +5,6 @@ function userHome() {
     const user = JSON.parse(localStorage.getItem('loggedInUser'));
     const [volunteerInfo, setVolunteerInfo] = useState(null);
     const [error, setError] = useState('');
-    const [borrowedItems, setBorrowedItems] = useState([]);
 
     useEffect(() => {
         // Fetch volunteer information for the current user
@@ -27,52 +26,7 @@ function userHome() {
             console.error('Error fetching volunteer info:', error);
             setError('Failed to load volunteer information');
         });
-
-        // Fetch user's borrowed items
-        fetch(`http://localhost:8000/transactions/`, {
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            }
-        })
-        .then(response => response.json())
-        .then(transactions => {
-            // Filter transactions for current user and get item details
-            const userTransactions = transactions.filter(t => t.user_id === user.user_id);
-            const itemPromises = userTransactions.map(transaction => 
-                fetch(`http://localhost:8000/items/${transaction.item_id}`)
-                    .then(response => response.json())
-            );
-            return Promise.all(itemPromises);
-        })
-        .then(items => {
-            setBorrowedItems(items);
-        })
-        .catch(error => {
-            console.error('Error fetching borrowed items:', error);
-            setError('Failed to load borrowed items');
-        });
-    }, [user.email, user.user_id]);
-
-    const handleReturnItem = (itemId) => {
-        fetch(`http://localhost:8000/items/return/${itemId}`, { 
-            method: 'PATCH',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                status: 'available'
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.message === "Item returned successfully") {
-                // Update state to remove returned item
-                setBorrowedItems(borrowedItems.filter(item => item.id !== itemId));
-            }
-        })
-        .catch(error => console.error('Error returning item:', error));
-    };
+    }, [user.email]);
 
     return (
         <div className='content'>
@@ -105,17 +59,24 @@ function userHome() {
             <div>
                 <h2>Borrowed Items</h2>
                 <ul className="items">
-                    {borrowedItems.map(item => (
-                        <li className="items" key={item.id}>
-                            <strong>{item.title}</strong> by {item.author}
-                            <button className="items" onClick={() => handleReturnItem(item.id)}>
-                                Return
-                            </button>
-                        </li>
-                    ))}
-                    {borrowedItems.length === 0 && (
-                        <li className="items">You have no borrowed items</li>
-                    )}
+                    <li className="items">
+                        Item Name
+                        Author
+                        Status
+                        <button className="items">Return</button>
+                    </li>
+                    <li className="items">
+                        Item Name
+                        Author
+                        Status
+                        <button className="items">Return</button>
+                    </li>
+                    <li className="items">
+                        Item Name
+                        Author
+                        Status
+                        <button className="items">Return</button>
+                    </li>
                 </ul>
             </div>
         </div>

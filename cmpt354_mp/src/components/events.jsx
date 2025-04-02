@@ -73,7 +73,7 @@ function events(){
 
             <ul className="items">
                 {filteredEvents.map((event, index) => (
-                    <li className="items" key={event.id}>
+                    <li className="items" key={event.event_id}>
                         {event.name}: {event.description} ({event.date}), room: {event.room_id}
                         {event.rsvp ? (
                             <button className="items">Attending</button>
