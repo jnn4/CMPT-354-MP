@@ -4,6 +4,7 @@ import '../App.css';
 function userHome() {
     const user = JSON.parse(localStorage.getItem('loggedInUser'));
     const [volunteerInfo, setVolunteerInfo] = useState(null);
+    const [registeredEvents, setRegisteredEvents] = useState([]);
     const [error, setError] = useState('');
 
     useEffect(() => {
@@ -26,7 +27,18 @@ function userHome() {
             console.error('Error fetching volunteer info:', error);
             setError('Failed to load volunteer information');
         });
-    }, [user.email]);
+
+        // Fetch user's registered events
+        fetch(`http://localhost:8000/events/user/${user.user_id}`)
+            .then(response => response.json())
+            .then(data => {
+                setRegisteredEvents(data);
+            })
+            .catch(error => {
+                console.error('Error fetching registered events:', error);
+                setError('Failed to load registered events');
+            });
+    }, [user.email, user.user_id]);
 
     return (
         <div className='content'>
@@ -54,6 +66,26 @@ function userHome() {
                 <button className="userHome">View Borrowed Items</button>
                 <button className="userHome">Upcoming Events</button>
                 <button className="userHome">Volunteering position</button>
+            </div>
+
+            {/* Registered Events Section */}
+            <div>
+                <h2>Your Registered Events</h2>
+                <ul className="items">
+                    {registeredEvents.length > 0 ? (
+                        registeredEvents.map(event => (
+                            <li className="items" key={event.event_id}>
+                                <strong>{event.name}</strong>
+                                <p>{event.description}</p>
+                                <p>Date: {event.date}</p>
+                                <p>Time: {event.time}</p>
+                                <p>Room: {event.room_id}</p>
+                            </li>
+                        ))
+                    ) : (
+                        <li className="items">You haven't registered for any events yet.</li>
+                    )}
+                </ul>
             </div>
 
             <div>

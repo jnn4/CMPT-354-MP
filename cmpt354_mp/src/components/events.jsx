@@ -6,14 +6,27 @@ function events(){
     const [events, setEvents] = useState([]);
     const [searchText, setSearchText] = useState('');
     const [eventsPopulated, setEventsPopulated] = useState(false);
+    const [registeredEvents, setRegisteredEvents] = useState(new Set());
+    const user = JSON.parse(localStorage.getItem('loggedInUser'));
 
-    // Fetch books from Flask API  
+    // Fetch events from Flask API  
     useEffect(() => {
         fetch("http://localhost:8000/events/")
-            .then((response) => response.json()) // Convert response to JSON
-            .then((data) => setEvents(data)) // Store the data in state
+            .then((response) => response.json())
+            .then((data) => setEvents(data))
             .catch((error) => console.error("Error:", error));
-    }, []);
+
+        // Fetch user's registered events
+        if (user) {
+            fetch(`http://localhost:8000/events/user/${user.user_id}`)
+                .then((response) => response.json())
+                .then((data) => {
+                    const registeredIds = new Set(data.map(event => event.event_id));
+                    setRegisteredEvents(registeredIds);
+                })
+                .catch((error) => console.error("Error fetching registered events:", error));
+        }
+    }, [user]);
 
     // window.onload = function() {
     //     fetch('http://localhost:8000/events/populate_events', {
@@ -38,8 +51,37 @@ function events(){
             .catch(error => console.error('Error populating event:', error));
     };
 
+    const handleRegister = (eventId) => {
+        if (!user) {
+            alert('Please log in to register for events');
+            return;
+        }
+
+        fetch(`http://localhost:8000/events/register/${eventId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ user_id: user.user_id })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert(data.error);
+                return;
+            }
+            // Update registered events set
+            setRegisteredEvents(prev => new Set([...prev, eventId]));
+            alert('Successfully registered for event!');
+        })
+        .catch(error => {
+            console.error('Error registering for event:', error);
+            alert('Failed to register for event');
+        });
+    };
+
     const filteredEvents = events.filter((event) => {
-        const title = event.title ? event.title.toLowerCase() : ""; 
+        const title = event.name ? event.name.toLowerCase() : ""; 
         const description = event.description ? event.description.toLowerCase() : ""; 
         const eventDate = event.date ? event.date.toString() : ""; 
     
@@ -75,10 +117,15 @@ function events(){
                 {filteredEvents.map((event, index) => (
                     <li className="items" key={event.event_id}>
                         {event.name}: {event.description} ({event.date}), room: {event.room_id}
-                        {event.rsvp ? (
-                            <button className="items">Attending</button>
+                        {registeredEvents.has(event.event_id) ? (
+                            <button className="items" disabled>Registered</button>
                         ) : (
-                            <button className="items">Register</button>
+                            <button 
+                                className="items" 
+                                onClick={() => handleRegister(event.event_id)}
+                            >
+                                Register
+                            </button>
                         )}
                     </li>
                 ))}

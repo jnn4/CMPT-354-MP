@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from extensions import db
-from models import Event
+from models import Event, attends
 from datetime import date, time
 
 # Create a Blueprint for events
@@ -112,7 +112,7 @@ def populate_events():
                 "room_id": 3
             },
             {
-                "name": "Children’s Storytime",
+                "name": "Children's Storytime",
                 "event_type": "Reading",
                 "description": "A fun storytelling session for kids aged 4-8.",
                 "date": date(2025, 4, 25),
@@ -178,4 +178,60 @@ def populate_events():
     except Exception as e:
         db.session.rollback()
         return jsonify({"message": str(e)}), 500
+
+# Register for an event
+@events_bp.route('/register/<int:event_id>', methods=['POST'])
+def register_for_event(event_id):
+    try:
+        data = request.get_json()
+        user_id = data.get('user_id')
+        
+        if not user_id:
+            return jsonify({'error': 'User ID is required'}), 400
+            
+        # Check if user is already registered
+        existing_registration = db.session.query(attends).filter_by(
+            user_id=user_id,
+            event_id=event_id
+        ).first()
+        
+        if existing_registration:
+            return jsonify({'error': 'User is already registered for this event'}), 400
+            
+        # Add new registration
+        db.session.execute(attends.insert().values(
+            user_id=user_id,
+            event_id=event_id,
+            attendance_status='registered',
+            registration_date=date.today()
+        ))
+        db.session.commit()
+        
+        return jsonify({'message': 'Successfully registered for event'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+# Get user's registered events
+@events_bp.route('/user/<int:user_id>', methods=['GET'])
+def get_user_events(user_id):
+    try:
+        # Get all events the user is registered for
+        user_events = db.session.query(Event).join(attends).filter(
+            attends.c.user_id == user_id
+        ).all()
+        
+        events_list = [{
+            'event_id': event.event_id,
+            'name': event.name,
+            'event_type': event.event_type,
+            'description': event.description,
+            'date': event.date.strftime('%Y-%m-%d'),
+            'time': event.time.strftime('%H:%M:%S'),
+            'room_id': event.room_id
+        } for event in user_events]
+        
+        return jsonify(events_list), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
     
