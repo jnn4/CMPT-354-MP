@@ -113,6 +113,15 @@ attends = db.Table('attends',
     db.Column('registration_date', db.Date, default=datetime.utcnow)
 )
 
+class FutureItem(db.Model):
+    __tablename__ = 'future_item'
+    future_item_id = db.Column(db.Integer, primary_key=True)
+    arrival_date = db.Column(db.Date, nullable=False)
+    item_id = db.Column(db.Integer, db.ForeignKey('item.item_id'), nullable=False)
+    
+    # Relationship
+    item = db.relationship('Item', backref=db.backref('future_items', lazy=True))
+
 donates = db.Table('donates',
     db.Column('user_email', db.String(100), db.ForeignKey('user.email'), primary_key=True),
     db.Column('item_id', db.Integer, db.ForeignKey('item.item_id'), primary_key=True),

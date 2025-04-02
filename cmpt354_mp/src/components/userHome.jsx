@@ -9,6 +9,7 @@ function UserHome() {
     const [borrowedItems, setBorrowedItems] = useState([]); // Stores borrowed items
     const [upcomingEvents, setUpcomingEvents] = useState([]); // Stores upcoming events
     const [volunteeringHistory, setVolunteeringHistory] = useState([]); // Stores volunteering history
+    const [donatedItems, setDonatedItemsHistory] = useState([]); // Stores volunteering history
     const [errorMessage, setErrorMessage] = useState(''); // Error handling
 
     // Fetch user data after component mounts
@@ -46,6 +47,7 @@ function UserHome() {
                     setBorrowedItems(data.borrowedItems);
                     setUpcomingEvents(data.upcomingEvents);
                     setVolunteeringHistory(data.volunteeringHistory); // Set volunteering history
+                    setDonatedItemsHistory(data.donatedItems); // Set donating history
                 } else {
                     setErrorMessage(data.message || 'Failed to fetch user data.');
                 }
@@ -118,7 +120,6 @@ function UserHome() {
         }
     };
   
-
     const handleSubmit = async (event) => {
         event.preventDefault();
         try {
@@ -197,7 +198,7 @@ function UserHome() {
             alert('An error occurred while starting volunteering.');
         }
     };    
-    
+   
     
     return (
         <div className='content'>
@@ -250,6 +251,37 @@ function UserHome() {
                     ) : (
                         <p>No upcoming registered events.</p>
                     )}
+            </div>
+
+            <div className="donated-section">
+                <h2>Donated Items</h2>
+                {donatedItems.length > 0 ? (
+                    <div className="donated-grid">
+                        {donatedItems.map(item => (
+                            <div key={item.item_id} className="donated-card">
+                                <h3>{item.title}</h3>
+                                <div className="donation-details">
+                                    <p><strong>Author:</strong> {item.author}</p>
+                                    <p><strong>Type:</strong> {item.type}</p>
+                                    <p><strong>Donated On:</strong> {item.donation_date}</p>
+                                    <p><strong>Arrival Date:</strong> {item.arrival_date}</p>
+                                    <p><strong>Current Status:</strong> 
+                                        <span className={`status-${item.current_status}`}>
+                                            {item.current_status}
+                                        </span>
+                                    </p>
+                                    <p><strong>Donation Status:</strong> 
+                                        <span className={`status-${item.donation_status}`}>
+                                            {item.donation_status}
+                                        </span>
+                                    </p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <p className="no-donations">You haven't donated any items yet</p>
+                )}
             </div>
 
             <div>

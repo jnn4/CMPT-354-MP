@@ -1,7 +1,7 @@
 # auth.py handles the login, sign up, logout and dashboard updates.
 from flask import Blueprint, request, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
-from models import Person, User, Staff, Volunteer, Item
+from models import Person, User, Staff, Volunteer, Item, FutureItem, donates
 from models import BorrowTransaction
 from models import Event, attends
 from datetime import datetime
@@ -147,6 +147,32 @@ def get_user_dashboard():
         'status': 'active' if not entry.end_date else 'completed'
     } for entry in volunteer_entries]
 
+    # Fetch donated items with specific columns
+    donated_items = db.session.query(
+        Item,
+        FutureItem,
+        donates.c.donation_date,
+        donates.c.donation_status
+    ).join(
+        donates, Item.item_id == donates.c.item_id
+    ).outerjoin(
+        FutureItem, Item.item_id == FutureItem.item_id
+    ).filter(
+        donates.c.user_email == email
+    ).all()
+
+    # Build donated items list
+    donated_list = [{
+        'item_id': item.item_id,
+        'title': item.title,
+        'author': item.author,
+        'type': item.type,
+        'donation_date': donation_date.strftime('%Y-%m-%d'),
+        'arrival_date': future.arrival_date.strftime('%Y-%m-%d') if future else 'Arrived',
+        'current_status': item.status,
+        'donation_status': donation_status
+    } for item, future, donation_date, donation_status in donated_items]
+
     return jsonify({
         'user': {
             'firstName': person.first_name,
@@ -155,5 +181,6 @@ def get_user_dashboard():
         },
         'borrowedItems': items_list,
         'upcomingEvents': events_list,
-        'volunteeringHistory': volunteer_history  # Changed to array of entries
+        'volunteeringHistory': volunteer_history,  # Changed to array of entries
+        'donatedItems': donated_list
     }), 200

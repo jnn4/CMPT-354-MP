@@ -2,122 +2,75 @@ import '../App.css';
 import React, {useEffect, useState} from 'react';
 
 function Donate() {
-    const [title, setTitle] = useState('');
-    const [author, setAuthor] = useState('');
-    const [yearPublished, setYearPublished] = useState('');
-    const [borrowed, setBorrowed] = useState(false);  // Initially, the book is not borrowed
+    const [formData, setFormData] = useState({
+        title: '',
+        author: '',
+        type: 'book',
+        pub_year: '',
+        arrival_date: ''
+    });
 
-    // Handle form submission
-    // Handle form submission
     const handleSubmit = async (e) => {
-        e.preventDefault();  // Prevent default form submission behavior
-
-        // Create the data object to send to the server
-        const bookData = {
-            title,
-            author,
-            year_published: yearPublished,
-            borrowed,
-        };
-
+        e.preventDefault();
         try {
-            // Send POST request to the backend API
-            const response = await fetch('http://localhost:8000/api/books/add', {
+            const response = await fetch('http://localhost:8000/donate', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(bookData),
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    ...formData,
+                    user_email: localStorage.getItem('userEmail')
+                })
             });
-
+            
+            const data = await response.json();
             if (response.ok) {
-                // Handle successful submission
-                const result = await response.json();
-                alert(result.message); // Display the response message from backend
+                alert('Donation successful!');
+                window.location.href = '/userHome';
             } else {
-                // Handle error
-                alert('Error adding book!');
+                alert(data.error || 'Donation failed');
             }
         } catch (error) {
-            console.error('Error:', error);
-            alert('There was a problem with the request.');
+            console.error('Donation error:', error);
+            alert('Connection error');
         }
     };
-    
+
     return (
         <div className="content">
-            <h1>Donate an Item</h1>
-            <div className="container">
-                <div className="box">
-                <form onSubmit={handleSubmit}>
-                        {/* Title Input */}
-                        <label>Title: </label>
-                        <br />
-                        <input
-                            type="text"
-                            className="rounded-textbox"
-                            value={title}
-                            onChange={(e) => setTitle(e.target.value)}
-                            required
-                        />
-                        <br />
-                        <br />
-                        
-                        {/* Author Input */}
-                        <label>Author: </label>
-                        <br />
-                        <input
-                            type="text"
-                            className="rounded-textbox"
-                            value={author}
-                            onChange={(e) => setAuthor(e.target.value)}
-                            required
-                        />
-                        <br />
-                        <br />
-
-                        {/* Year Published Input */}
-                        <label>Publishing Year: </label>
-                        <br />
-                        <input
-                            type="number"
-                            className="rounded-textbox"
-                            value={yearPublished}
-                            onChange={(e) => setYearPublished(e.target.value)}
-                            required
-                        />
-                        <br />
-                        <br />
-
-                        {/* Borrowed Radio Button */}
-                        <label>Borrowed: </label>
-                        <br />
-                        <input
-                            type="radio"
-                            id="borrowedYes"
-                            name="borrowed"
-                            value="true"
-                            checked={borrowed === true}
-                            onChange={() => setBorrowed(true)}
-                        />
-                        <label htmlFor="borrowedYes">Yes</label>
-                        <input
-                            type="radio"
-                            id="borrowedNo"
-                            name="borrowed"
-                            value="false"
-                            checked={borrowed === false}
-                            onChange={() => setBorrowed(false)}
-                        />
-                        <label htmlFor="borrowedNo">No</label>
-                        <br />
-                        <br />
-
-                        {/* Submit Button */}
-                        <button type="submit">Donate</button>
-                    </form>
-                </div>
-            </div> 
+            <h1>Donate New Item</h1>
+            <form onSubmit={handleSubmit}>
+                <input
+                    type="text"
+                    placeholder="Title"
+                    required
+                    onChange={e => setFormData({...formData, title: e.target.value})}
+                />
+                <input
+                    type="text"
+                    placeholder="Author"
+                    required
+                    onChange={e => setFormData({...formData, author: e.target.value})}
+                />
+                <select 
+                    value={formData.type} 
+                    onChange={e => setFormData({...formData, type: e.target.value})}
+                >
+                    <option value="book">Book</option>
+                    <option value="magazine">Magazine</option>
+                    <option value="cd">CD</option>
+                </select>
+                <input
+                    type="number"
+                    placeholder="Publication Year"
+                    onChange={e => setFormData({...formData, pub_year: e.target.value})}
+                />
+                <input
+                    type="date"
+                    required
+                    onChange={e => setFormData({...formData, arrival_date: e.target.value})}
+                />
+                <button type="submit">Donate Item</button>
+            </form>
         </div>
     );
 }
