@@ -58,17 +58,25 @@ def create_volunteer():
         # Check if person already exists
         existing_person = Person.query.get(email)
         if existing_person:
-            return jsonify({"message": "A person with this email already exists!"}), 400
+            # Update existing person's information
+            existing_person.first_name = first_name
+            existing_person.last_name = last_name
+            existing_person.phone_num = phone
+        else:
+            # Create new person
+            new_person = Person(
+                email=email,
+                first_name=first_name,
+                last_name=last_name,
+                phone_num=phone
+            )
+            db.session.add(new_person)
+            db.session.flush()  # Get the person's email without committing
 
-        # Create new person
-        new_person = Person(
-            email=email,
-            first_name=first_name,
-            last_name=last_name,
-            phone_num=phone
-        )
-        db.session.add(new_person)
-        db.session.flush()  # Get the person's email without committing
+        # Check if person is already a staff member
+        existing_staff = Staff.query.get(email)
+        if existing_staff:
+            return jsonify({"message": "You are already registered as a staff member!"}), 400
 
         # Create new staff member
         new_staff = Staff(
@@ -78,6 +86,11 @@ def create_volunteer():
         )
         db.session.add(new_staff)
         db.session.flush()  # Get the staff_id without committing
+
+        # Check if person is already a volunteer
+        existing_volunteer = Volunteer.query.filter_by(volunteer_id=new_staff.staff_id).first()
+        if existing_volunteer:
+            return jsonify({"message": "You are already registered as a volunteer!"}), 400
 
         # Create new volunteer
         new_volunteer = Volunteer(
