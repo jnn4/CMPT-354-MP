@@ -1,10 +1,7 @@
 import React from 'react';
-import { useEffect, useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from "./components/home";
 import Items from "./components/items";
-import Personnel from "./components/personnel";
-import Volunteer from "./components/Volunteer";
 import Donate from "./components/donate";
 import HelpRequest from "./components/HelpRequest";
 import Navbar from "./components/navbar";
@@ -24,8 +21,6 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/items" element={<Items />} />
-            <Route path="/personnel" element={<Personnel />} />
-            <Route path="/volunteer" element={<Volunteer />} />
             <Route path="/donate" element={<Donate />} />
             <Route path="/help-request" element={<HelpRequest />} />
             <Route path="/login" element={<Login />} />

@@ -19,8 +19,6 @@ function Navbar() {
                     <li><a href="/staffHome">Staff Dashboard</a></li>
                     <li><a href="/manage-items">Manage Items</a></li>
                     <li><a href="/manage-events">Manage Events</a></li>
-                    <li><a href="/personnel">Personnel</a></li>
-                    <li><a href="/volunteer">Volunteer</a></li>
                     <li><a href="/donate">Manage Future Items</a></li>
                     <li><a href="/help-request">Help Requests</a></li>
                 </ul>
@@ -37,8 +35,6 @@ function Navbar() {
                     <li><a href="/userHome">User Dashboard</a></li>
                     <li><a href="/items">Items</a></li>
                     <li><a href="/events">Events</a></li>
-                    <li><a href="/personnel">Personnel</a></li>
-                    <li><a href="/volunteer">Volunteer</a></li>
                     <li><a href="/donate">Donate Future Items</a></li>
                     <li><a href="/help-request">Help Requests</a></li>
                 </ul>
