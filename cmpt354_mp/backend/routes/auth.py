@@ -2,7 +2,7 @@
 from flask import Blueprint, request, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from models import Person, User, Staff, Volunteer, Item, FutureItem, donates, RequestHelp
-from models import BorrowTransaction
+from models import BorrowTransaction, Fine
 from models import Event, attends
 from datetime import datetime
 
@@ -135,6 +135,23 @@ def get_user_dashboard():
         'due_date': transaction.due_date.strftime('%Y-%m-%d')
     } for item, transaction in borrowed_items]
 
+    # Fetch fines with item and transaction details
+    fines = db.session.query(Fine, BorrowTransaction, Item)\
+        .join(BorrowTransaction, Fine.trans_id == BorrowTransaction.trans_id)\
+        .join(Item, BorrowTransaction.item_id == Item.item_id)\
+        .filter(BorrowTransaction.user_email == email)\
+        .all()
+
+    fines_list = [{
+        'fine_id': fine.fine_id,
+        'amount': float(fine.amount),
+        'paid': fine.paid,
+        'item_title': item.title,
+        'borrow_date': transaction.borrow_date.strftime('%Y-%m-%d'),
+        'due_date': transaction.due_date.strftime('%Y-%m-%d'),
+        'days_overdue': (datetime.utcnow() - transaction.due_date).days if datetime.utcnow() > transaction.due_date else 0
+    } for fine, transaction, item in fines]
+
     # Fetch upcoming events with join
     upcoming_events = db.session.query(Event, attends.c.attendance_status)\
         .join(attends, Event.event_id == attends.c.event_id)\
@@ -210,6 +227,7 @@ def get_user_dashboard():
             'email': person.email
         },
         'borrowedItems': items_list,
+        'fines': fines_list,
         'upcomingEvents': events_list,
         'volunteeringHistory': volunteer_history,  # Changed to array of entries
         'donatedItems': donated_list,

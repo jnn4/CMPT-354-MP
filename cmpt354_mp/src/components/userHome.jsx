@@ -7,6 +7,7 @@ import Volunteer from "./Volunteer";
 function UserHome() {
     const [userData, setUserData] = useState(null); // Stores user details
     const [borrowedItems, setBorrowedItems] = useState([]); // Stores borrowed items
+    const [fines, setFines] = useState([]); // Stores fines
     const [upcomingEvents, setUpcomingEvents] = useState([]); // Stores upcoming events
     const [volunteeringHistory, setVolunteeringHistory] = useState([]); // Stores volunteering history
     const [donatedItems, setDonatedItemsHistory] = useState([]); // Stores volunteering history
@@ -46,6 +47,7 @@ function UserHome() {
     
                 if (response.ok) {
                     setBorrowedItems(data.borrowedItems);
+                    setFines(data.fines);
                     setUpcomingEvents(data.upcomingEvents);
                     setVolunteeringHistory(data.volunteeringHistory); // Set volunteering history
                     setDonatedItemsHistory(data.donatedItems); // Set donating history
@@ -230,6 +232,38 @@ function UserHome() {
                     </ul>
                 ) : (
                     <p>You have no borrowed items.</p>
+                )}
+            </div>
+
+            <div className="fines-section">
+                <h2>Your Fines</h2>
+                {fines.length > 0 ? (
+                    <table className="fines-table">
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Borrowed</th>
+                                <th>Due Date</th>
+                                <th>Days Overdue</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {fines.map(fine => (
+                                <tr key={fine.fine_id} className={fine.paid ? 'paid' : 'unpaid'}>
+                                    <td>{fine.item_title}</td>
+                                    <td>{fine.borrow_date}</td>
+                                    <td>{fine.due_date}</td>
+                                    <td>{fine.days_overdue}</td>
+                                    <td>${fine.amount.toFixed(2)}</td>
+                                    <td>{fine.paid ? 'Paid' : 'Unpaid'}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                ) : (
+                    <p>No outstanding fines</p>
                 )}
             </div>
     
