@@ -1,12 +1,42 @@
 from flask import Blueprint, request, jsonify
-from models import Volunteer, db
+from models import Volunteer, Person, Staff, db
 from sqlalchemy.exc import IntegrityError
 from datetime import date
 
 volunteer_bp = Blueprint('volunteer', __name__, url_prefix='/volunteers')
 
+@volunteer_bp.route('/', methods=['GET'])
+def get_all_volunteers():
+    # Query to fetch all volunteers with their corresponding staff and person details
+    volunteers = db.session.query(
+        Volunteer.volunteer_id,
+        Volunteer.role,
+        Volunteer.start_date,
+        Volunteer.end_date,
+        Person.first_name,
+        Person.last_name,
+        Person.email
+    ).join(Staff, Volunteer.volunteer_id == Staff.staff_id) \
+     .join(Person, Staff.email == Person.email).all()  # Ensure Staff is linked to Person
+
+    # Create response list
+    volunteer_list = [
+        {
+            "volunteer_id": v.volunteer_id,
+            "role": v.role,
+            "start_date": v.start_date.strftime('%Y-%m-%d') if v.start_date else None,  # Format date
+            "end_date": v.end_date.strftime('%Y-%m-%d') if v.end_date else None,  # Format date
+            "first_name": v.first_name,
+            "last_name": v.last_name,
+            "email": v.email
+        }
+        for v in volunteers
+    ]
+
+    return jsonify(volunteer_list), 200
+
 # Create a new volunteer
-@volunteer_bp.route('/', methods=['POST'])
+@volunteer_bp.route('/post', methods=['POST'])
 def create_volunteer():
     try:
         data = request.get_json()
@@ -120,25 +150,59 @@ def delete_volunteer(volunteer_id):
 def populate_volunteer():
     try:
         volunteer_data = [
-            {"volunteer_id": 1, "role": "Event Coordinator", "start_date": date(2025, 1, 10), "end_date": date(2025, 5, 10)},
-            {"volunteer_id": 2, "role": "Mentor", "start_date": date(2025, 2, 1), "end_date": date(2025, 6, 1)},
-            {"volunteer_id": 3, "role": "Workshop Leader", "start_date": date(2025, 3, 15), "end_date": date(2025, 7, 15)},
-            {"volunteer_id": 4, "role": "Event Coordinator", "start_date": date(2025, 4, 1), "end_date": None},  # Ongoing volunteer
-            {"volunteer_id": 5, "role": "Admin Assistant", "start_date": date(2025, 1, 20), "end_date": date(2025, 5, 20)},
-            {"volunteer_id": 6, "role": "Marketing Assistant", "start_date": date(2025, 2, 10), "end_date": date(2025, 6, 10)},
-            {"volunteer_id": 7, "role": "Volunteer Trainer", "start_date": date(2025, 3, 5), "end_date": date(2025, 7, 5)},
-            {"volunteer_id": 8, "role": "Event Coordinator", "start_date": date(2025, 4, 10), "end_date": None},  # Ongoing volunteer
-            {"volunteer_id": 9, "role": "Workshop Leader", "start_date": date(2025, 5, 1), "end_date": date(2025, 9, 1)},
-            {"volunteer_id": 10, "role": "Admin Assistant", "start_date": date(2025, 6, 1), "end_date": date(2025, 10, 1)}
+            {"role": "Event Coordinator", "start_date": date(2025, 1, 10), "end_date": date(2025, 5, 10)},
+            {"role": "Mentor", "start_date": date(2025, 2, 1), "end_date": date(2025, 6, 1)},
+            {"role": "Workshop Leader", "start_date": date(2025, 3, 15), "end_date": date(2025, 7, 15)},
+            {"role": "Event Coordinator", "start_date": date(2025, 4, 1), "end_date": None},  # Ongoing
+            {"role": "Admin Assistant", "start_date": date(2025, 1, 20), "end_date": date(2025, 5, 20)},
+            {"role": "Marketing Assistant", "start_date": date(2025, 2, 10), "end_date": date(2025, 6, 10)},
+            {"role": "Volunteer Trainer", "start_date": date(2025, 3, 5), "end_date": date(2025, 7, 5)},
+            {"role": "Event Coordinator", "start_date": date(2025, 4, 10), "end_date": None},  # Ongoing
+            {"role": "Workshop Leader", "start_date": date(2025, 5, 1), "end_date": date(2025, 9, 1)},
+            {"role": "Admin Assistant", "start_date": date(2025, 6, 1), "end_date": date(2025, 10, 1)}
         ]
-        
-        for volunteer_data in volunteer_data:
-            volunteer = Volunteer(**volunteer_data)
-            db.session.add(volunteer)
 
-        db.session.commit()
-        return jsonify({"message": "Volunteer populated successfully"}), 200
+        inserted_count = 0
+        skipped_count = 0
+
+        # Get all available staff to assign as volunteers
+        staff_members = db.session.query(Staff).all()
+        staff_list = [staff.staff_id for staff in staff_members]  # Extract staff IDs
+
+        for i, data in enumerate(volunteer_data):
+            if i >= len(staff_list):
+                break  # Stop if we run out of staff members
+
+            staff_id = staff_list[i]  # Assign a staff ID as volunteer_id
+
+            # Check if this staff is already a volunteer
+            existing_volunteer = db.session.query(Volunteer).filter_by(volunteer_id=staff_id).first()
+
+            if not existing_volunteer:
+                try:
+                    new_volunteer = Volunteer(
+                        volunteer_id=staff_id,
+                        role=data["role"],
+                        start_date=data["start_date"],
+                        end_date=data["end_date"]
+                    )
+                    db.session.add(new_volunteer)
+                    db.session.commit()
+                    inserted_count += 1
+                except IntegrityError:
+                    db.session.rollback()
+                    skipped_count += 1
+            else:
+                skipped_count += 1
+
+        return jsonify({
+            "message": "Volunteer population completed",
+            "inserted": inserted_count,
+            "skipped": skipped_count
+        }), 200
+
     except Exception as e:
         db.session.rollback()
         return jsonify({"message": "Failed to populate Volunteer", "error": str(e)}), 500
+
 

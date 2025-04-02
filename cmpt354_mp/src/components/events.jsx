@@ -61,6 +61,9 @@ function events(){
                 onChange={(e) => setSearchText(e.target.value)}
             />
 
+            <br></br>
+            <a href="/rooms">Rooms</a>
+
             <p>Labels</p>
             <button className="items">Name</button>
             <button className="items">Audience</button>
@@ -71,7 +74,7 @@ function events(){
             <ul className="items">
                 {filteredEvents.map((event, index) => (
                     <li className="items" key={event.id}>
-                        {event.name}: {event.description} ({event.date})
+                        {event.name}: {event.description} ({event.date}), room: {event.room_id}
                         {event.rsvp ? (
                             <button className="items">Attending</button>
                         ) : (

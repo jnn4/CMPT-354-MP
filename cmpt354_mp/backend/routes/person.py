@@ -3,10 +3,27 @@ from models import Person, db
 from sqlalchemy.exc import IntegrityError
 from datetime import date
 
-person_bp = Blueprint('person', __name__, url_prefix='/persons')
+person_bp = Blueprint('person', __name__)
+
+# Get all people
+@person_bp.route('/', methods=['GET'])
+def get_persons(): 
+    person = Person.query.all()
+    persons_data = [
+        {
+            "email": person.email,
+            "firstName": person.first_name,
+            "lastName": person.last_name,
+            "phoneNum": person.phone_num,
+            "age": person.age
+        }
+        for person in person
+    ]
+    return jsonify(persons_data), 200
+
 
 # Create a new person
-@person_bp.route('/', methods=['POST'])
+@person_bp.route('/post', methods=['POST'])
 def create_person():
     try:
         data = request.get_json()

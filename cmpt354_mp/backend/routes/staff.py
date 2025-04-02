@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from extensions import db
-from models import Staff
+from models import Staff, Person
 from werkzeug.security import generate_password_hash
 
 
@@ -9,13 +9,30 @@ staff_bp = Blueprint('staff', __name__, url_prefix='/staff')
 # Get all staff members
 @staff_bp.route('/', methods=['GET'])
 def get_all_staff():
-    staff = Staff.query.all()
-    return jsonify([{
-        'staff_id': s.staff_id,
-        'email': s.email,
-        'position': s.position,
-        'wage': s.wage
-    } for s in staff]), 200
+    # Fetch staff and related person information by joining the 'Staff' and 'Person' tables
+    staff = db.session.query(
+        Staff.staff_id,      # This is the Staff's ID
+        Person.first_name,   # This is the Person's first name
+        Person.last_name,    # This is the Person's last name
+        Staff.position,      # This is the Staff's position
+        Person.email         # This is the Person's email
+    ).join(Person, Staff.email == Person.email).all()
+
+    # Create the staff list to send as response, mapping to the correct field names
+    staff_list = [
+        {
+            "staff_id": s[0],       # Access staff_id
+            "first_name": s[1],     # Access first_name
+            "last_name": s[2],      # Access last_name
+            "position": s[3],       # Access position
+            "email": s[4]          # Access email
+        }
+        for s in staff
+    ]
+    
+    # Return the staff list as a JSON response
+    return jsonify(staff_list), 200
+
 
 # Get a specific staff member by ID
 @staff_bp.route('/<int:staff_id>', methods=['GET'])

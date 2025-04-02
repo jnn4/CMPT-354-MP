@@ -4,7 +4,7 @@ from models import Room, db
 rooms_bp = Blueprint('rooms', __name__, url_prefix='/rooms')
 
 # Create a new room
-@rooms_bp.route('/', methods=['POST'])
+@rooms_bp.route('/post', methods=['POST'])
 def create_room():
     try:
         data = request.get_json()

@@ -5,7 +5,7 @@ from datetime import date
 future_items_bp = Blueprint('future_items', __name__, url_prefix='/future_items')
 
 # Create a new future item (formerly donation)
-@future_items_bp.route('/', methods=['POST'])
+@future_items_bp.route('/post', methods=['POST'])
 def create_future_item():
     try:
         data = request.get_json()

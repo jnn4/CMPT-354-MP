@@ -3,24 +3,39 @@ import React, {useEffect, useState} from 'react';
 
 function volunteer() {
   const [volunteer, setVolunteer] = useState([]);
+  const [volunteerPopulated, setVolunteerPopulated] = useState(false);
 
   // Fetch volunteer from Flask API
   useEffect(() => {
-      fetch("http://localhost:8000/api/volunteer")
+      fetch("http://localhost:8000/volunteer/")
           .then((response) => response.json()) // Convert response to JSON
           .then((data) => setVolunteer(data)) // Store the data in state
           .catch((error) => console.error("Error:", error));
   }, []);
 
-  // Function to add a volunteer
-  window.onload = function() {
-      fetch('http://localhost:8000/api/volunteer/populate_volunteer', {
-          method: 'POST',
-      })
+  // // Function to add a volunteer
+  // window.onload = function() {
+  //     fetch('http://localhost:8000/api/volunteer/populate_volunteer', {
+  //         method: 'POST',
+  //     })
+  //     .then(response => response.json())
+  //     .then(data => console.log("Volunteer added:", data))
+  //     .catch(error => console.error('Error:', error));
+  // }
+
+  const populateVolunteer = () => {
+    if (volunteerPopulated) return; // Prevents re-population if already done
+
+    fetch('http://localhost:8000/person/populate', {
+      method: 'POST',
+    })
       .then(response => response.json())
-      .then(data => console.log("Volunteer added:", data))
-      .catch(error => console.error('Error:', error));
-  }
+      .then(data => {
+        console.log("Persons populated:", data);
+        setVolunteerPopulated(true);
+      })
+      .catch(error => console.error('Error populating persons:', error));
+  };
 
 
   return (
@@ -28,9 +43,14 @@ function volunteer() {
       <h1>Volunteer Sign Up</h1>
       <div className="box">
           <form>
-              <label>Username: </label>
+              <label>First Name: </label>
               <br></br>
-              <input type="text" className="rounded-textbox" id="username" name="username" required></input>
+              <input type="text" className="rounded-textbox" id="firstName" name="firstName" required></input>
+              <br></br>
+              <br></br>
+              <label>Last Name: </label>
+              <br></br>
+              <input type="text" className="rounded-textbox" id="lastName" name="lastName" required></input>
               <br></br>
               <br></br>
               <label>Password: </label>
@@ -41,7 +61,9 @@ function volunteer() {
           </form>
       </div>
       <div className="volContainer">
-        <p>Available Position: </p>
+        <p>Current Volunteers: </p>
+
+        <button onClick={populateVolunteer} className="items">Populate Volunteer</button>
 
         <ul className="items">
           {volunteer.map((volunteer) => (
