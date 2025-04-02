@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import '../App.css';
 import LogoutButton from './LogoutButton';
-import Volunteer from "./Volunteer";
 
 
 function UserHome() {
