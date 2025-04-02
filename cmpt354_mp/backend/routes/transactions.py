@@ -26,11 +26,16 @@ def create_transaction():
         if not user or not item:
             return jsonify({"message": "User or Item not found!"}), 404
 
+        # Convert ISO date strings to Python datetime objects
+        borrowed_at = datetime.fromisoformat(borrow_date.replace('Z', '+00:00'))
+        returned_at = datetime.fromisoformat(due_date.replace('Z', '+00:00'))
+
         # Create and add the new borrow transaction to the database
         new_transaction = BorrowTransaction(
-            borrow_date=borrow_date,
-            due_date=due_date,
-            user_id=user_id
+            borrowed_at=borrowed_at,
+            returned_at=returned_at,
+            user_id=user_id,
+            item_id=item_id
         )
 
         db.session.add(new_transaction)

@@ -31,11 +31,10 @@ function Login() {
 
                 // Store user info in localStorage with role
                 localStorage.setItem('loggedInUser', JSON.stringify({
+                    user_id: data.user_id,
                     name: `${data.first_name} ${data.last_name}`,
                     email: data.email,
-                    role: data.role,
-                    phone_num: data.phone_num,
-                    age: data.age
+                    role: data.role
                 }));
                 
                 // Navigate to home page
