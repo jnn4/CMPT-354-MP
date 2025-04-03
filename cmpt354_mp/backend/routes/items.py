@@ -84,15 +84,15 @@ def borrow_item(id):
     if not item:
         return jsonify({"message": "Item not found"}), 404
 
-    if item.borrowed:
+    if item.status == "borrowed":
         return jsonify({"message": "This item is already borrowed"}), 400
 
-    item.borrowed = True
+    item.status = "borrowed"
     db.session.commit()
 
     return jsonify({
         "message": "Item borrowed successfully",
-        "item": {"id": item.id, "title": item.title}
+        "item": {"id": item.item_id, "title": item.title}
     }), 200
 
 # Return a borrowed Item by its ID
@@ -102,15 +102,15 @@ def return_item(id):
     if not item:
         return jsonify({"message": "Item not found"}), 404
 
-    if not item.borrowed:
+    if item.status != "borrowed":
         return jsonify({"message": "This item was not borrowed"}), 400
 
-    item.borrowed = False
+    item.status = "available"
     db.session.commit()
 
     return jsonify({
         "message": "Item returned successfully",
-        "Item": {"id": item.id, "title": item.title}
+        "Item": {"id": item.item_id, "title": item.title}
     }), 200
 
 # Delete an item by ID

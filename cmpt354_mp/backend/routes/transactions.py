@@ -9,18 +9,18 @@ transactions_bp = Blueprint('transactions', __name__, url_prefix='/transactions'
 def create_transaction():
     try:
         data = request.get_json()
-        print("Received data:", data)  # Debug log
         
         # Extract necessary data from the request
         user_id = data.get('user_id')
         item_id = data.get('item_id')
         borrowed_at = data.get('borrowed_at')
+        returned_at = data.get('returned_at')
 
         # Validation
-        if not user_id or not item_id:
+        if not user_id or not item_id or not borrowed_at:
             return jsonify({
                 "message": "Missing required fields",
-                "required": ["user_id", "item_id"],
+                "required": ["user_id", "item_id", "borrowed_at"],
                 "received": data
             }), 400
 
@@ -38,22 +38,12 @@ def create_transaction():
         if item.status == "borrowed":
             return jsonify({"message": "Item is already borrowed"}), 400
 
-        # Handle borrowed_at date
-        try:
-            if borrowed_at:
-                # If borrowed_at is provided, parse it
-                borrowed_at = datetime.fromisoformat(borrowed_at.replace('Z', '+00:00'))
-            else:
-                # If not provided, use current time
-                borrowed_at = datetime.utcnow()
-        except ValueError as e:
-            return jsonify({"message": f"Invalid borrowed_at date format: {str(e)}"}), 400
-
         # Create and add the new borrow transaction to the database
         new_transaction = BorrowTransaction(
             user_id=user_id,
             item_id=item_id,
-            borrowed_at=borrowed_at
+            borrowed_at=datetime.fromisoformat(borrowed_at.replace('Z', '+00:00')),
+            returned_at=datetime.fromisoformat(returned_at.replace('Z', '+00:00')) if returned_at else None
         )
 
         db.session.add(new_transaction)
@@ -64,16 +54,15 @@ def create_transaction():
             "trans_id": new_transaction.trans_id,
             "user_id": user_id,
             "item_id": item_id,
-            "borrowed_at": borrowed_at.strftime('%Y-%m-%d %H:%M:%S') if borrowed_at else None
+            "borrowed_at": borrowed_at,
+            "returned_at": returned_at
         }), 201
 
     except ValueError as e:
         db.session.rollback()
-        print("ValueError:", str(e))  # Debug log
         return jsonify({"message": f"Invalid date format: {str(e)}"}), 400
     except Exception as e:
         db.session.rollback()
-        print("Exception:", str(e))  # Debug log
         return jsonify({"message": f"Failed to create transaction: {str(e)}"}), 500
 
 # Get all borrow transactions
@@ -84,10 +73,9 @@ def get_all_transactions():
         transactions_list = [
             {
                 "trans_id": trans.trans_id,
-                "borrowed_at": trans.borrowed_at.strftime('%Y-%m-%d %H:%M:%S') if trans.borrowed_at else None,
-                "returned_at": trans.returned_at.strftime('%Y-%m-%d %H:%M:%S') if trans.returned_at else None,
-                "user_id": trans.user_id,
-                "item_id": trans.item_id
+                "borrowed_at": trans.borrowed_at,
+                "returned_at": trans.returned_at,
+                "user_id": trans.user_id
             }
             for trans in transactions
         ]
@@ -104,10 +92,9 @@ def get_transaction_by_id(trans_id):
 
     return jsonify({
         "trans_id": transaction.trans_id,
-        "borrowed_at": transaction.borrowed_at.strftime('%Y-%m-%d %H:%M:%S') if transaction.borrowed_at else None,
-        "returned_at": transaction.returned_at.strftime('%Y-%m-%d %H:%M:%S') if transaction.returned_at else None,
-        "user_id": transaction.user_id,
-        "item_id": transaction.item_id
+        "borrowed_at": transaction.borrowed_at,
+        "returned_at": transaction.returned_at,
+        "user_id": transaction.user_id
     }), 200
 
 # Update a borrow transaction
@@ -131,8 +118,8 @@ def update_transaction(trans_id):
         return jsonify({
             "message": "Transaction updated successfully!",
             "trans_id": transaction.trans_id,
-            "borrowed_at": transaction.borrowed_at.strftime('%Y-%m-%d %H:%M:%S') if transaction.borrowed_at else None,
-            "returned_at": transaction.returned_at.strftime('%Y-%m-%d %H:%M:%S') if transaction.returned_at else None
+            "borrowed_at": transaction.borrowed_at,
+            "returned_at": transaction.returned_at
         }), 200
 
     except Exception as e:

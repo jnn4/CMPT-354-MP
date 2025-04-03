@@ -58,6 +58,12 @@ const populateItems = () => {
     const dueDate = new Date();
     dueDate.setDate(dueDate.getDate() + 14); // Set due date to 14 days from now
 
+    console.log("Full user object:", user);
+    console.log("User ID:", user.user_id);
+    console.log("User email:", user.email);
+    console.log("Item ID:", itemId);
+    console.log("Borrow date:", borrowDate);
+
     // First create the transaction
     fetch('http://localhost:8000/transactions/', {
       method: 'POST',
@@ -65,16 +71,17 @@ const populateItems = () => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        user_id: user.id,
+        user_id: user.user_id,
         item_id: itemId,
-        borrow_date: borrowDate,
-        due_date: dueDate.toISOString(),
-        return_date: null  // Add this field as it's expected by the backend
+        borrowed_at: borrowDate,
+        returned_at: null
       })
     })
     .then(response => {
+      console.log("Response status:", response.status);
       if (!response.ok) {
         return response.json().then(data => {
+          console.error("Error response:", data);
           throw new Error(data.message || 'Failed to create transaction');
         });
       }
@@ -83,7 +90,7 @@ const populateItems = () => {
     .then(data => {
       if (data.message === "Transaction created successfully!") {
         // Then update the item status
-        return fetch(`http://localhost:8000/items/borrow/${itemId}`, { 
+        return fetch(`http://localhost:8000/items/items/borrow/${itemId}`, { 
           method: 'PATCH' 
         });
       }
@@ -101,7 +108,7 @@ const populateItems = () => {
       if (data.message === "Item borrowed successfully") {
         // Update state to reflect borrowed item
         setItems(items.map(item =>
-          item.id === itemId ? { ...item, borrowed: true } : item
+          item.id === itemId ? { ...item, status: "borrowed" } : item
         ));
         alert('Item borrowed successfully!');
       }
@@ -114,13 +121,13 @@ const populateItems = () => {
 
   // Function that handles item return
   const handleReturnItem = (itemId) => {
-    fetch(`http://localhost:8000/items/return/${itemId}`, { method: 'PATCH' })
+    fetch(`http://localhost:8000/item/return/${itemId}`, { method: 'PATCH' })
       .then(response => response.json())
       .then(data => {
         if (data.message === "Item returned successfully") {
           // Update state to reflect returned item
           setItems(items.map(item =>
-            item.id === itemId ? { ...item, borrowed: false } : item
+            item.id === itemId ? { ...item, status: "available" } : item
           ));
         }
       })
@@ -146,10 +153,10 @@ const populateItems = () => {
             {item.title} by {item.author} ({item.year_published})
             {!user ? (
               <button className="items" disabled style={{ opacity: 0.5, cursor: 'not-allowed' }}>
-                {item.borrowed === "borrowed" ? "Return" : "Borrow"}
+                {item.status === "borrowed" ? "Return" : "Borrow"}
               </button>
             ) : (
-              item.borrowed === "borrowed" ? (
+              item.status === "borrowed" ? (
                 <button className="items" onClick={() => handleReturnItem(item.id)}>
                   Return
                 </button>

@@ -21,8 +21,8 @@ function events(){
             .then((data) => setEvents(data))
             .catch((error) => console.error("Error:", error));
 
-        // Only fetch user's registered events if we have a valid user with email
-        if (loggedInUser && loggedInUser.email) {
+        // Fetch user's registered events if user exists
+        if (loggedInUser) {
             fetch(`http://localhost:8000/events/user/${loggedInUser.email}`)
                 .then((response) => response.json())
                 .then((data) => {
@@ -67,7 +67,7 @@ function events(){
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ email: user.email })
+            body: JSON.stringify({ user_id: user.user_id })
         })
         .then(response => response.json())
         .then(data => {

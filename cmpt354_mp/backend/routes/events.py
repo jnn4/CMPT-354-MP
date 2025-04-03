@@ -184,19 +184,14 @@ def populate_events():
 def register_for_event(event_id):
     try:
         data = request.get_json()
-        email = data.get('email')
+        user_id = data.get('user_id')
         
-        if not email:
-            return jsonify({'error': 'Email is required'}), 400
-            
-        # Get user by email
-        user = User.query.filter_by(email=email).first()
-        if not user:
-            return jsonify({'error': 'User not found'}), 404
+        if not user_id:
+            return jsonify({'error': 'User ID is required'}), 400
             
         # Check if user is already registered
         existing_registration = db.session.query(attends).filter_by(
-            user_id=user.user_id,
+            user_id=user_id,
             event_id=event_id
         ).first()
         
@@ -205,7 +200,7 @@ def register_for_event(event_id):
             
         # Add new registration
         db.session.execute(attends.insert().values(
-            user_id=user.user_id,
+            user_id=user_id,
             event_id=event_id,
             attendance_status='registered',
             registration_date=date.today()

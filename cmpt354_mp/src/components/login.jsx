@@ -27,10 +27,12 @@ function Login() {
             const data = await response.json();
             
             if (response.status === 200) {
-                console.log('Login successful', data);
+                console.log('Login response data:', data);
+                console.log('User ID from response:', data.user_id);
 
                 // Store user info in localStorage with role
                 localStorage.setItem('loggedInUser', JSON.stringify({
+                    user_id: data.user_id,
                     name: `${data.first_name} ${data.last_name}`,
                     email: data.email,
                     role: data.role,
