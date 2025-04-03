@@ -10,7 +10,25 @@ events_bp = Blueprint('events', __name__)
 @events_bp.route('/', methods=['GET'])
 def get_events():
     try:
-        events = Event.query.options(joinedload(Event.room)).all()
+        # Get query parameters
+        search_query = request.args.get('search', '').strip()
+        event_type = request.args.get('type', None)
+
+        # Start with a base query
+        query = Event.query.options(joinedload(Event.room))
+
+        # Filter by search text if provided
+        if search_query:
+            query = query.filter(Event.name.ilike(f"%{search_query}%"))
+
+        # Filter by event type if provided
+        if event_type and event_type != 'all':
+            query = query.filter_by(type=event_type)
+
+        # Fetch filtered events
+        events = query.all()
+
+        # Serialize event data with room details
         event_data = [{
             "event_id": event.event_id,
             "name": event.name,
@@ -20,12 +38,13 @@ def get_events():
             "audience_type": event.audience_type,
             "room": {
                 "room_id": event.room.room_id,
-                "name": event.room.name,  # Changed from room_ to name
+                "name": event.room.name,
                 "capacity": event.room.capacity
             } if event.room else None
         } for event in events]
-        
+
         return jsonify(event_data), 200
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
