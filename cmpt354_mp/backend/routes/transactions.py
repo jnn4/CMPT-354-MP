@@ -9,19 +9,18 @@ transactions_bp = Blueprint('transactions', __name__, url_prefix='/transactions'
 def create_transaction():
     try:
         data = request.get_json()
+        print("Received data:", data)  # Debug log
         
         # Extract necessary data from the request
         user_id = data.get('user_id')
         item_id = data.get('item_id')
-        borrow_date = data.get('borrow_date')
-        due_date = data.get('due_date')
-        return_date = data.get('return_date')
+        borrowed_at = data.get('borrowed_at')
 
         # Validation
-        if not user_id or not item_id or not borrow_date or not due_date:
+        if not user_id or not item_id:
             return jsonify({
                 "message": "Missing required fields",
-                "required": ["user_id", "item_id", "borrow_date", "due_date"],
+                "required": ["user_id", "item_id"],
                 "received": data
             }), 400
 
@@ -39,13 +38,22 @@ def create_transaction():
         if item.status == "borrowed":
             return jsonify({"message": "Item is already borrowed"}), 400
 
+        # Handle borrowed_at date
+        try:
+            if borrowed_at:
+                # If borrowed_at is provided, parse it
+                borrowed_at = datetime.fromisoformat(borrowed_at.replace('Z', '+00:00'))
+            else:
+                # If not provided, use current time
+                borrowed_at = datetime.utcnow()
+        except ValueError as e:
+            return jsonify({"message": f"Invalid borrowed_at date format: {str(e)}"}), 400
+
         # Create and add the new borrow transaction to the database
         new_transaction = BorrowTransaction(
             user_id=user_id,
             item_id=item_id,
-            borrow_date=datetime.fromisoformat(borrow_date.replace('Z', '+00:00')),
-            due_date=datetime.fromisoformat(due_date.replace('Z', '+00:00')),
-            return_date=datetime.fromisoformat(return_date.replace('Z', '+00:00')) if return_date else None
+            borrowed_at=borrowed_at
         )
 
         db.session.add(new_transaction)
@@ -56,16 +64,16 @@ def create_transaction():
             "trans_id": new_transaction.trans_id,
             "user_id": user_id,
             "item_id": item_id,
-            "borrow_date": borrow_date,
-            "due_date": due_date,
-            "return_date": return_date
+            "borrowed_at": borrowed_at.strftime('%Y-%m-%d %H:%M:%S') if borrowed_at else None
         }), 201
 
     except ValueError as e:
         db.session.rollback()
+        print("ValueError:", str(e))  # Debug log
         return jsonify({"message": f"Invalid date format: {str(e)}"}), 400
     except Exception as e:
         db.session.rollback()
+        print("Exception:", str(e))  # Debug log
         return jsonify({"message": f"Failed to create transaction: {str(e)}"}), 500
 
 # Get all borrow transactions
@@ -76,10 +84,10 @@ def get_all_transactions():
         transactions_list = [
             {
                 "trans_id": trans.trans_id,
-                "borrow_date": trans.borrow_date,
-                "due_date": trans.due_date,
-                "return_date": trans.return_date,
-                "user_id": trans.user_id
+                "borrowed_at": trans.borrowed_at.strftime('%Y-%m-%d %H:%M:%S') if trans.borrowed_at else None,
+                "returned_at": trans.returned_at.strftime('%Y-%m-%d %H:%M:%S') if trans.returned_at else None,
+                "user_id": trans.user_id,
+                "item_id": trans.item_id
             }
             for trans in transactions
         ]
@@ -96,10 +104,10 @@ def get_transaction_by_id(trans_id):
 
     return jsonify({
         "trans_id": transaction.trans_id,
-        "borrow_date": transaction.borrow_date,
-        "due_date": transaction.due_date,
-        "return_date": transaction.return_date,
-        "user_id": transaction.user_id
+        "borrowed_at": transaction.borrowed_at.strftime('%Y-%m-%d %H:%M:%S') if transaction.borrowed_at else None,
+        "returned_at": transaction.returned_at.strftime('%Y-%m-%d %H:%M:%S') if transaction.returned_at else None,
+        "user_id": transaction.user_id,
+        "item_id": transaction.item_id
     }), 200
 
 # Update a borrow transaction
@@ -113,21 +121,18 @@ def update_transaction(trans_id):
         data = request.get_json()
 
         # Update transaction details
-        borrow_date = data.get('borrow_date', transaction.borrow_date)
-        due_date = data.get('due_date', transaction.due_date)
-        return_date = data.get('return_date', transaction.return_date)
+        borrowed_at = data.get('borrowed_at', transaction.borrowed_at)
+        returned_at = data.get('returned_at', transaction.returned_at)
 
-        transaction.borrow_date = borrow_date
-        transaction.due_date = due_date
-        transaction.return_date = return_date
+        transaction.borrowed_at = borrowed_at
+        transaction.returned_at = returned_at
         db.session.commit()
 
         return jsonify({
             "message": "Transaction updated successfully!",
             "trans_id": transaction.trans_id,
-            "borrow_date": transaction.borrow_date,
-            "due_date": transaction.due_date,
-            "return_date": transaction.return_date
+            "borrowed_at": transaction.borrowed_at.strftime('%Y-%m-%d %H:%M:%S') if transaction.borrowed_at else None,
+            "returned_at": transaction.returned_at.strftime('%Y-%m-%d %H:%M:%S') if transaction.returned_at else None
         }), 200
 
     except Exception as e:
