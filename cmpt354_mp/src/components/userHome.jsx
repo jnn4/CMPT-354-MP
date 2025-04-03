@@ -77,6 +77,26 @@ function userHome() {
         }
     }, []);
 
+    const handleReturnItem = async (itemId) => {
+        try {
+            const response = await fetch(`http://localhost:8000/items/item/return/${itemId}`, {
+                method: 'PATCH'
+            });
+
+            if (!response.ok) {
+                const data = await response.json();
+                throw new Error(data.message || 'Failed to return item');
+            }
+
+            // Update the borrowed items list by removing the returned item
+            setBorrowedItems(borrowedItems.filter(item => item.id !== itemId));
+            alert('Item returned successfully!');
+        } catch (error) {
+            console.error('Error returning item:', error);
+            alert(error.message || 'Failed to return item. Please try again.');
+        }
+    };
+
     if (!user) {
         return (
             <div className='content'>
@@ -102,6 +122,12 @@ function userHome() {
                                 <p>Author: {item.author}</p>
                                 <p>Borrowed on: {item.borrow_date}</p>
                                 <p>Due on: {item.due_date}</p>
+                                <button 
+                                    className="return-button"
+                                    onClick={() => handleReturnItem(item.id)}
+                                >
+                                    Return Item
+                                </button>
                             </li>
                         ))}
                     </ul>
