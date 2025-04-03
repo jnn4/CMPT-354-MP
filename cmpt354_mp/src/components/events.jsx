@@ -7,18 +7,23 @@ function events(){
     const [searchText, setSearchText] = useState('');
     const [eventsPopulated, setEventsPopulated] = useState(false);
     const [registeredEvents, setRegisteredEvents] = useState(new Set());
-    const user = JSON.parse(localStorage.getItem('loggedInUser'));
+    const [user, setUser] = useState(null);
 
     // Fetch events from Flask API  
     useEffect(() => {
+        // Get user from localStorage once when component mounts
+        const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
+        setUser(loggedInUser);
+
+        // Fetch all events
         fetch("http://localhost:8000/events/")
             .then((response) => response.json())
             .then((data) => setEvents(data))
             .catch((error) => console.error("Error:", error));
 
-        // Fetch user's registered events
-        if (user) {
-            fetch(`http://localhost:8000/events/user/${user.user_id}`)
+        // Only fetch user's registered events if we have a valid user with email
+        if (loggedInUser && loggedInUser.email) {
+            fetch(`http://localhost:8000/events/user/${loggedInUser.email}`)
                 .then((response) => response.json())
                 .then((data) => {
                     const registeredIds = new Set(data.map(event => event.event_id));
@@ -26,7 +31,7 @@ function events(){
                 })
                 .catch((error) => console.error("Error fetching registered events:", error));
         }
-    }, [user]);
+    }, []); // Empty dependency array - only run once when component mounts
 
     // window.onload = function() {
     //     fetch('http://localhost:8000/events/populate_events', {
@@ -62,7 +67,7 @@ function events(){
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ user_id: user.user_id })
+            body: JSON.stringify({ email: user.email })
         })
         .then(response => response.json())
         .then(data => {
@@ -131,8 +136,8 @@ function events(){
                 )}
             </ul>
 
-            {/* Optional: Button to populate items (just for testing) */}
-            <button onClick={populateEvents} className="items">Populate Events</button>
+            {/* Optional: Button to populate items (just for testing)
+            <button onClick={populateEvents} className="items">Populate Events</button> */}
         </div>
     )
 }

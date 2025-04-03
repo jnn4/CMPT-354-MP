@@ -154,24 +154,52 @@ def delete_transaction(trans_id):
 def populate_transactions():
     try:
         transaction_data = [
-            {"id": 1, "user_id": 1, "book_id": 1, "borrowed_at": datetime(2025, 4, 1, 10, 0, 0)},
-            {"id": 2, "user_id": 2, "book_id": 2, "borrowed_at": datetime(2025, 4, 2, 11, 30, 0)},
-            {"id": 3, "user_id": 3, "book_id": 3, "borrowed_at": datetime(2025, 4, 3, 9, 15, 0)},
-            {"id": 4, "user_id": 4, "book_id": 4, "borrowed_at": datetime(2025, 4, 4, 14, 45, 0)},
-            {"id": 5, "user_id": 5, "book_id": 5, "borrowed_at": datetime(2025, 4, 5, 13, 0, 0)},
-            {"id": 6, "user_id": 6, "book_id": 6, "borrowed_at": datetime(2025, 4, 6, 16, 30, 0)},
-            {"id": 7, "user_id": 7, "book_id": 7, "borrowed_at": datetime(2025, 4, 7, 10, 0, 0)},
-            {"id": 8, "user_id": 8, "book_id": 8, "borrowed_at": datetime(2025, 4, 8, 17, 15, 0)},
-            {"id": 9, "user_id": 9, "book_id": 9, "borrowed_at": datetime(2025, 4, 9, 11, 30, 0)},
-            {"id": 10, "user_id": 10, "book_id": 10, "borrowed_at": datetime(2025, 4, 10, 14, 45, 0)}
+            {"trans_id": 1, "user_id": 1, "item_id": 1, "borrowed_at": datetime(2025, 4, 1, 10, 0, 0)},
+            {"trans_id": 2, "user_id": 2, "item_id": 2, "borrowed_at": datetime(2025, 4, 2, 11, 30, 0)},
+            {"trans_id": 3, "user_id": 3, "item_id": 3, "borrowed_at": datetime(2025, 4, 3, 9, 15, 0)},
+            {"trans_id": 4, "user_id": 4, "item_id": 4, "borrowed_at": datetime(2025, 4, 4, 14, 45, 0)},
+            {"trans_id": 5, "user_id": 5, "item_id": 5, "borrowed_at": datetime(2025, 4, 5, 13, 0, 0)},
+            {"trans_id": 6, "user_id": 6, "item_id": 6, "borrowed_at": datetime(2025, 4, 6, 16, 30, 0)},
+            {"trans_id": 7, "user_id": 7, "item_id": 7, "borrowed_at": datetime(2025, 4, 7, 10, 0, 0)},
+            {"trans_id": 8, "user_id": 8, "item_id": 8, "borrowed_at": datetime(2025, 4, 8, 17, 15, 0)},
+            {"trans_id": 9, "user_id": 9, "item_id": 9, "borrowed_at": datetime(2025, 4, 9, 11, 30, 0)},
+            {"trans_id": 10, "user_id": 10, "item_id": 10, "borrowed_at": datetime(2025, 4, 10, 14, 45, 0)}
         ]
 
-        for transaction_data in transaction_data:
-            transaction = BorrowTransaction(**transaction_data)
-            db.session.add(transaction)
+        inserted_count = 0
+        skipped_count = 0
+
+        for trans_data in transaction_data:
+            # Check if transaction already exists
+            existing_transaction = BorrowTransaction.query.filter_by(trans_id=trans_data["trans_id"]).first()
+            
+            if not existing_transaction:
+                # Check if user exists
+                user = User.query.get(trans_data["user_id"])
+                if not user:
+                    print(f"Skipping transaction {trans_data['trans_id']}: User {trans_data['user_id']} does not exist")
+                    skipped_count += 1
+                    continue
+
+                # Check if item exists
+                item = Item.query.get(trans_data["item_id"])
+                if not item:
+                    print(f"Skipping transaction {trans_data['trans_id']}: Item {trans_data['item_id']} does not exist")
+                    skipped_count += 1
+                    continue
+
+                transaction = BorrowTransaction(**trans_data)
+                db.session.add(transaction)
+                inserted_count += 1
+            else:
+                skipped_count += 1
 
         db.session.commit()
-        return jsonify({"message": "Transaction populated successfully"}), 200
+        return jsonify({
+            "message": "Transaction population completed",
+            "inserted": inserted_count,
+            "skipped": skipped_count
+        }), 200
     except Exception as e:
         db.session.rollback()
         return jsonify({"message": "Failed to populate transaction", "error": str(e)}), 500

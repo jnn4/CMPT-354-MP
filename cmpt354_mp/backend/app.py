@@ -2,7 +2,9 @@ from flask import Flask
 from flask_cors import CORS
 from extensions import db  # Import db from extensions
 from models import Person, User, Staff, Volunteer, Room, Event, Audience, Item, FutureItem, BorrowTransaction, Fines, RequestHelp
-
+from datetime import datetime, date, time
+from werkzeug.security import generate_password_hash
+import requests
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -24,11 +26,7 @@ app.secret_key = 'I-LOVE-DB'
 # Initialize db with app
 db.init_app(app)
 
-# Create the tables in the database if they don't exist
-with app.app_context():
-    db.create_all()
-
-# Import and register Blueprints (do this *after* app and db setup)
+# Import and register Blueprints (do this *before* app setup)
 from routes.auth import auth_bp
 from routes.dashboard import dashboard_bp
 from routes.items import items_bp
@@ -60,7 +58,66 @@ app.register_blueprint(fines_bp, url_prefix='/fines')
 app.register_blueprint(person_bp, url_prefix='/person')
 app.register_blueprint(audience_bp, url_prefix='/audience')
 
+def populate_database():
+    """Populate all tables with sample data using existing populate endpoints"""
+    print("Starting database population...")
+    
+    # Create a test client
+    with app.test_client() as client:
+        try:
+            # Populate Users
+            response = client.post('/auth/populate_test_user')
+            if response.status_code == 200:
+                print("✓ Users populated")
+            else:
+                print(f"✗ Failed to populate Users: {response.status_code} - {response.get_json()}")
 
+            # Populate Items
+            response = client.post('/items/populate_items')
+            if response.status_code == 200:
+                print("✓ Items populated")
+            else:
+                print(f"✗ Failed to populate Items: {response.status_code} - {response.get_json()}")
+
+            # Populate Events
+            response = client.post('/events/populate_events')
+            if response.status_code == 200:
+                print("✓ Events populated")
+            else:
+                print(f"✗ Failed to populate Events: {response.status_code} - {response.get_json()}")
+
+            # Populate Future Items
+            response = client.post('/future_items/populate')
+            if response.status_code == 200:
+                print("✓ Future Items populated")
+            else:
+                print(f"✗ Failed to populate Future Items: {response.status_code} - {response.get_json()}")
+
+            # Populate Transactions
+            response = client.post('/transactions/populate')
+            if response.status_code == 200:
+                print("✓ Transactions populated")
+            else:
+                print(f"✗ Failed to populate Transactions: {response.status_code} - {response.get_json()}")
+
+            # Populate Volunteers
+            response = client.post('/volunteer/populate')
+            if response.status_code == 200:
+                print("✓ Volunteers populated")
+            else:
+                print(f"✗ Failed to populate Volunteers: {response.status_code} - {response.get_json()}")
+
+            print("\nDatabase population completed!")
+
+        except Exception as e:
+            print(f"Error during database population: {str(e)}")
+            import traceback
+            print(traceback.format_exc())
+
+# Create the tables in the database if they don't exist
+with app.app_context():
+    db.create_all()
+    populate_database()
 
 if __name__ == '__main__':
     app.run(debug=True, port=8000)

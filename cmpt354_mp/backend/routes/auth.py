@@ -284,6 +284,11 @@ def get_staff_dashboard():
 @auth_bp.route('/populate_test_user', methods=['POST'])
 def populate_test_user():
     try:
+        # Check if test user already exists
+        existing_person = Person.query.filter_by(email="alice@example.com").first()
+        if existing_person:
+            return jsonify({"message": "Test user already exists"}), 200
+
         # Create Person record
         new_person = Person(
             email="alice@example.com",

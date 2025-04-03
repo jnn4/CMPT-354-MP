@@ -40,7 +40,7 @@ function userHome() {
             });
 
             // Fetch user's registered events
-            fetch(`http://localhost:8000/events/user/${parsedUser.user_id}`)
+            fetch(`http://localhost:8000/events/user/${parsedUser.email}`)
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('Failed to fetch registered events');

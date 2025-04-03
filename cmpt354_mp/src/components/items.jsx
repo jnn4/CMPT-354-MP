@@ -166,8 +166,8 @@ const populateItems = () => {
         )}
       </ul>
 
-      {/* Optional: Button to populate items (just for testing) */}
-      <button onClick={populateItems} className="items">Populate Items</button>
+      {/* Optional: Button to populate items (just for testing)
+      <button onClick={populateItems} className="items">Populate Items</button> */}
     </div>
   );
 }
