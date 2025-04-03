@@ -4,7 +4,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from models import Person, User, Staff, Volunteer, Item, FutureItem, donates, RequestHelp
 from models import BorrowTransaction, Fines
 from models import Event, attends
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 from extensions import db
@@ -140,8 +140,8 @@ def get_user_dashboard():
     # Fetch borrowed items with join
     borrowed_items = db.session.query(Item, BorrowTransaction)\
         .join(BorrowTransaction, Item.item_id == BorrowTransaction.item_id)\
-        .filter(BorrowTransaction.user_email == email)\
-        .filter(BorrowTransaction.return_date == None)\
+        .filter(BorrowTransaction.user_id == user.user_id)\
+        .filter(BorrowTransaction.returned_at == None)\
         .all()
     
     items_list = [{
@@ -150,15 +150,15 @@ def get_user_dashboard():
         'author': item.author,
         'pub_year': item.pub_year,
         'status': item.status,
-        'borrow_date': transaction.borrow_date.strftime('%Y-%m-%d'),
-        'due_date': transaction.due_date.strftime('%Y-%m-%d')
+        'borrow_date': transaction.borrowed_at.strftime('%Y-%m-%d'),
+        'due_date': (transaction.borrowed_at + timedelta(days=14)).strftime('%Y-%m-%d')
     } for item, transaction in borrowed_items]
 
     # Fetch fines with item and transaction details
     fines = db.session.query(Fines, BorrowTransaction, Item)\
         .join(BorrowTransaction, Fines.trans_id == BorrowTransaction.trans_id)\
         .join(Item, BorrowTransaction.item_id == Item.item_id)\
-        .filter(BorrowTransaction.user_email == email)\
+        .filter(BorrowTransaction.user_id == user.user_id)\
         .all()
 
     fines_list = [{
@@ -166,9 +166,9 @@ def get_user_dashboard():
         'amount': float(fine.amount),
         'paid': fine.paid,
         'item_title': item.title,
-        'borrow_date': transaction.borrow_date.strftime('%Y-%m-%d'),
-        'due_date': transaction.due_date.strftime('%Y-%m-%d'),
-        'days_overdue': (datetime.utcnow() - transaction.due_date).days if datetime.utcnow() > transaction.due_date else 0
+        'borrow_date': transaction.borrowed_at.strftime('%Y-%m-%d'),
+        'due_date': (transaction.borrowed_at + timedelta(days=14)).strftime('%Y-%m-%d'),
+        'days_overdue': (datetime.utcnow() - (transaction.borrowed_at + timedelta(days=14))).days if datetime.utcnow() > (transaction.borrowed_at + timedelta(days=14)) else 0
     } for fine, transaction, item in fines]
 
     # Fetch upcoming events with join

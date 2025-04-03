@@ -5,6 +5,7 @@ function userHome() {
     const [user, setUser] = useState(null);
     const [volunteerInfo, setVolunteerInfo] = useState(null);
     const [registeredEvents, setRegisteredEvents] = useState([]);
+    const [borrowedItems, setBorrowedItems] = useState([]);
     const [error, setError] = useState('');
 
     useEffect(() => {
@@ -18,6 +19,22 @@ function userHome() {
         try {
             const parsedUser = JSON.parse(userData);
             setUser(parsedUser);
+
+            // Fetch borrowed items
+            fetch(`http://localhost:8000/items/user/${parsedUser.user_id}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch borrowed items');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    setBorrowedItems(data);
+                })
+                .catch(error => {
+                    console.error('Error fetching borrowed items:', error);
+                    setError('Failed to load borrowed items');
+                });
 
             // Fetch volunteer information for the current user
             fetch(`http://localhost:8000/volunteer/`, {
@@ -74,6 +91,25 @@ function userHome() {
             <h1>Hi {user.email}</h1>
             <p>This is the user dashboard</p>
             
+            {/* Borrowed Items Section */}
+            <div className="borrowed-items-section">
+                <h2>Your Borrowed Items</h2>
+                {borrowedItems.length > 0 ? (
+                    <ul className="items">
+                        {borrowedItems.map(item => (
+                            <li className="items" key={`${item.id}-${item.borrow_date}`}>
+                                <strong>{item.title}</strong>
+                                <p>Author: {item.author}</p>
+                                <p>Borrowed on: {item.borrow_date}</p>
+                                <p>Due on: {item.due_date}</p>
+                            </li>
+                        ))}
+                    </ul>
+                ) : (
+                    <p>You haven't borrowed any items yet.</p>
+                )}
+            </div>
+
             {/* Volunteer Position Section */}
             <div className="volunteer-section">
                 <h2>Volunteer Position</h2>
@@ -90,7 +126,6 @@ function userHome() {
                 )}
                 {error && <p className="error-message">{error}</p>}
             </div>
-
 
             {/* Registered Events Section */}
             <div>
@@ -111,7 +146,6 @@ function userHome() {
                     )}
                 </ul>
             </div>
-
         </div>
     );
 }

@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, request
-from models import db, Item
+from models import db, Item, BorrowTransaction
 from flask_cors import CORS
+from datetime import datetime, timedelta
 
 items_bp = Blueprint('items', __name__)
 
@@ -131,3 +132,29 @@ def delete_item(id):
     except Exception as e:
         db.session.rollback()
         return jsonify({"message": "Failed to delete item", "error": str(e)}), 500
+
+# Get items borrowed by a specific user
+@items_bp.route('/user/<int:user_id>', methods=['GET'])
+def get_user_items(user_id):
+    try:
+        # Get all items borrowed by the user that haven't been returned
+        borrowed_items = db.session.query(Item, BorrowTransaction)\
+            .join(BorrowTransaction, Item.item_id == BorrowTransaction.item_id)\
+            .filter(BorrowTransaction.user_id == user_id)\
+            .filter(BorrowTransaction.returned_at == None)\
+            .distinct(Item.item_id)\
+            .all()
+        
+        items_list = [{
+            'id': item.item_id,
+            'title': item.title,
+            'author': item.author,
+            'pub_year': item.pub_year,
+            'status': item.status,
+            'borrow_date': transaction.borrowed_at.strftime('%Y-%m-%d'),
+            'due_date': (transaction.borrowed_at + timedelta(days=14)).strftime('%Y-%m-%d')
+        } for item, transaction in borrowed_items]
+        
+        return jsonify(items_list), 200
+    except Exception as e:
+        return jsonify({"message": str(e)}), 500
