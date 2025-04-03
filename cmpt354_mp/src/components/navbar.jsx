@@ -64,6 +64,7 @@ function Navbar() {
                         )}
                         {user.role === 'staff' && (
                             <>
+                                <li><a href="/staffHome">Staff Dashboard</a></li>
                                 <li><a href="/manage-items">Manage Items</a></li>
                                 <li><a href="/manage-events">Manage Events</a></li>
                                 <li><a href="/manage-fines">Manage Fines</a></li>
@@ -97,6 +98,7 @@ function Navbar() {
                                 )}
                                 {user.role === 'staff' && (
                                     <>
+                                        <li><a href="/staffHome">Staff Dashboard</a></li>
                                         <li><a href="/manage-items">Manage Items</a></li>
                                         <li><a href="/manage-events">Manage Events</a></li>
                                         <li><a href="/manage-fines">Manage Fines</a></li>

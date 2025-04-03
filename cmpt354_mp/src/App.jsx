@@ -11,6 +11,7 @@ import Navbar from "./components/navbar";
 import Login from "./components/login";
 import Signup from "./components/signup";
 import UserHome from "./components/userHome";
+import StaffHome from "./components/staffHome";
 import Events from "./components/events";
 import Users from "./components/users";
 import Rooms from "./components/rooms";
@@ -37,6 +38,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/userHome" element={<UserHome />} />
+            <Route path="/staffHome" element={<StaffHome />} />
             <Route path="/events" element={<Events />} />
             <Route path="/users" element={<Users />} />
             <Route path="/rooms" element={<Rooms />} />
