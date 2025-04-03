@@ -1,5 +1,4 @@
 import '../App.css';
-import './User.css';
 import React, { useState } from 'react';
 
 function Donate() {
