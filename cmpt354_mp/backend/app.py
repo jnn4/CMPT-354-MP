@@ -100,6 +100,13 @@ def populate_database():
             else:
                 print(f"✗ Failed to populate Transactions: {response.status_code} - {response.get_json()}")
 
+            # Populate Fines
+            response = client.post('/fines/populate')
+            if response.status_code == 200:
+                print("✓ Fines populated")
+            else:
+                print(f"✗ Failed to populate Fines: {response.status_code} - {response.get_json()}")
+
             # Populate Volunteers
             response = client.post('/volunteer/populate')
             if response.status_code == 200:

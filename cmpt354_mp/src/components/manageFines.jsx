@@ -56,7 +56,8 @@ function ManageFines() {
                     <div key={fine.fine_id} className="fine-card">
                         <h3>Fine ID: {fine.fine_id}</h3>
                         <p>Transaction ID: {fine.trans_id}</p>
-                        <p>Amount: ${fine.fine_amount}</p>
+                        <p>Amount: ${fine.amount}</p>
+                        <p>Status: {fine.paid ? 'Paid' : 'Unpaid'}</p>
                         <button 
                             className="delete-button"
                             onClick={() => handleDelete(fine.fine_id)}
