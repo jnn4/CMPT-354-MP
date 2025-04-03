@@ -1,7 +1,11 @@
 from flask import Blueprint, jsonify, request
 from models import db, Item
+from flask_cors import CORS
 
 items_bp = Blueprint('items', __name__)
+
+# Enable CORS for all routes in the Blueprint
+CORS(items_bp, resources={r"/*": {"origins": "http://localhost:5173"}})
 
 # Create a new item
 @items_bp.route('/', methods=['POST'])
