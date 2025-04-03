@@ -5,6 +5,7 @@ function Items() {
   const [items, setItems] = useState([]);
   const [searchText, setSearchText] = useState('');
   const [itemsPopulated, setItemsPopulated] = useState(false);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
     // Fetch books only once when the component mounts
@@ -13,6 +14,14 @@ function Items() {
       .then((data) => setItems(data))
       .catch((error) => console.error("Error fetching items:", error));
   }, []); // Empty dependency array ensures this only runs once after the component mounts
+
+  useEffect(() => {
+    // Fetch user data only once when the component mounts
+    const userData = JSON.parse(localStorage.getItem('loggedInUser'));
+    if (userData) {
+      setUser(userData);
+    }
+  }, []);
 
   // Function to populate books in the database (this will only run once, e.g., for testing)
 
@@ -40,7 +49,6 @@ const populateItems = () => {
 
   // Function that handles item borrowing
   const handleBorrowItem = (itemId) => {
-    const user = JSON.parse(localStorage.getItem('loggedInUser'));
     if (!user) {
       alert('Please log in to borrow items');
       return;
@@ -123,14 +131,6 @@ const populateItems = () => {
   return (
     <div className="content">
       <h1>Library Books</h1>
-      <p>Labels</p>
-      <button className="items">Name</button>
-      <button className="items">Audience</button>
-      <button className="items">Date</button>
-      <button className="items">Time</button>
-      <button className="items">Type</button>
-
-      <br />
 
       <input
         className="rounded-textbox"
@@ -144,14 +144,20 @@ const populateItems = () => {
       {filteredItems.map((item) => (
           <li className="items" key={item.id}>
             {item.title} by {item.author} ({item.year_published})
-            {item.borrowed === "borrowed" ? (
-              <button className="items" onClick={() => handleReturnItem(item.id)}>
-                Return
+            {!user ? (
+              <button className="items" disabled style={{ opacity: 0.5, cursor: 'not-allowed' }}>
+                {item.borrowed === "borrowed" ? "Return" : "Borrow"}
               </button>
             ) : (
-              <button className="items" onClick={() => handleBorrowItem(item.id)}>
-                Borrow
-              </button>
+              item.borrowed === "borrowed" ? (
+                <button className="items" onClick={() => handleReturnItem(item.id)}>
+                  Return
+                </button>
+              ) : (
+                <button className="items" onClick={() => handleBorrowItem(item.id)}>
+                  Borrow
+                </button>
+              )
             )}
           </li>
         ))}

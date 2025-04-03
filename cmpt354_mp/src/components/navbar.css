@@ -72,7 +72,8 @@
     background-color: #e9ecef;
 }
 
-.sidebar ul li:last-child {
+/* Style for logout button specifically */
+.sidebar ul li.logout-button {
     margin-top: 20px;
     padding: 10px 15px;
     color: #dc3545;
@@ -81,7 +82,7 @@
     transition: background-color 0.3s;
 }
 
-.sidebar ul li:last-child:hover {
+.sidebar ul li.logout-button:hover {
     background-color: #f8d7da;
 }
 

@@ -71,7 +71,7 @@ function Navbar() {
                                 <li><a href="/manage-volunteers">Manage Volunteers</a></li>
                             </>
                         )}
-                        <li onClick={handleLogout} style={{ cursor: 'pointer' }}>Log out</li>
+                        <li className="logout-button" onClick={handleLogout}>Log out</li>
                     </ul>
                 </>
             ) : (
@@ -82,12 +82,39 @@ function Navbar() {
                         <p className="role">Please log in to continue</p>
                     </div>
                     <ul>
-                        <li><a href="/">Home</a></li>
-                        <li><a href="/items">Browse Items</a></li>
-                        <li><a href="/events">View Events</a></li>
-                        <li><a href="/contact">Contact Us</a></li>
-                        <li><a href="/login" style={{ color: '#4CAF50', fontWeight: 'bold' }}>Login</a></li>
-                        <li><a href="/signup" style={{ color: '#2196F3', fontWeight: 'bold' }}>Sign Up</a></li>
+                        {/* <li><a href="/">Home</a></li> */}
+                        {user ? (
+                            <>
+                                {user.role !== 'staff' && (
+                                    <>
+                                        <li><a href="/userHome">User Home</a></li>
+                                        <li><a href="/items">Items</a></li>
+                                        <li><a href="/events">Events</a></li>
+                                        <li><a href="/volunteer">Volunteer</a></li>
+                                        <li><a href="/donate">Donate</a></li>
+                                        <li><a href="/contact">Contact</a></li>
+                                    </>
+                                )}
+                                {user.role === 'staff' && (
+                                    <>
+                                        <li><a href="/manage-items">Manage Items</a></li>
+                                        <li><a href="/manage-events">Manage Events</a></li>
+                                        <li><a href="/manage-fines">Manage Fines</a></li>
+                                        <li><a href="/manage-staff">Manage Staff</a></li>
+                                        <li><a href="/manage-volunteers">Manage Volunteers</a></li>
+                                    </>
+                                )}
+                                <li className="logout-button" onClick={handleLogout}>Log out</li>
+                            </>
+                        ) : (
+                            <>
+                                <li><a href="/">Home</a></li>
+                                <li><a href="/items">Items</a></li>
+                                <li><a href="/events">Events</a></li>
+                                <li><a href="/login">Login</a></li>
+                                <li><a href="/signup">Sign Up</a></li>
+                            </>
+                        )}
                     </ul>
                 </>
             )}

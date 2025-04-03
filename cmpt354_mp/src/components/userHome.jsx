@@ -91,11 +91,6 @@ function userHome() {
                 {error && <p className="error-message">{error}</p>}
             </div>
 
-            <div className="action-buttons">
-                <button className="userHome">View Borrowed Items</button>
-                <button className="userHome">Upcoming Events</button>
-                <button className="userHome">Volunteering position</button>
-            </div>
 
             {/* Registered Events Section */}
             <div>
@@ -117,29 +112,6 @@ function userHome() {
                 </ul>
             </div>
 
-            <div>
-                <h2>Borrowed Items</h2>
-                <ul className="items">
-                    <li className="items">
-                        Item Name
-                        Author
-                        Status
-                        <button className="items">Return</button>
-                    </li>
-                    <li className="items">
-                        Item Name
-                        Author
-                        Status
-                        <button className="items">Return</button>
-                    </li>
-                    <li className="items">
-                        Item Name
-                        Author
-                        Status
-                        <button className="items">Return</button>
-                    </li>
-                </ul>
-            </div>
         </div>
     );
 }

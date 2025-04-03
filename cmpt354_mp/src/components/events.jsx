@@ -106,18 +106,15 @@ function events(){
             <br></br>
             <a href="/rooms">Rooms</a>
 
-            <p>Labels</p>
-            <button className="items">Name</button>
-            <button className="items">Audience</button>
-            <button className="items">Date</button>
-            <button className="items">Time</button>
-            <button className="items">Type</button>
-
             <ul className="items">
                 {filteredEvents.map((event, index) => (
                     <li className="items" key={event.event_id}>
                         {event.name}: {event.description} ({event.date}), room: {event.room_id}
-                        {registeredEvents.has(event.event_id) ? (
+                        {!user ? (
+                            <button className="items" disabled style={{ opacity: 0.5, cursor: 'not-allowed' }}>
+                                Register
+                            </button>
+                        ) : registeredEvents.has(event.event_id) ? (
                             <button className="items" disabled>Registered</button>
                         ) : (
                             <button 
