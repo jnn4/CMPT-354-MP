@@ -1,0 +1,116 @@
+.app-container {
+    display: flex;
+    height: 100vh;
+    font-family: Hiragino Sans GB;
+    
+  }
+
+  h1{
+    font-weight: 300;
+    font-size: 36px;
+    line-height: 100%;
+    letter-spacing: 0%;
+    text-align: center;
+  }
+  
+/* Main content should take the remaining space */
+.content {
+    flex: 1;
+    margin-left: 150px; /* Matches the sidebar width */
+    padding: 20px;
+    overflow-y: auto; /* Enable scrolling if content is too long */
+    /* Flexbox for centering content 
+    display: flex;*/
+    justify-content: center; /* Centers content horizontally */
+    align-items: center; /* Centers content vertically */
+    text-align: center; /* Ensures text inside is centered */
+  }
+
+  .rounded-textbox {
+    border: 2px solid #ccc;
+    border-radius: 10px; /* Adjust for more/less rounding */
+    padding: 10px;
+    width: 270px;
+    outline: none;
+    margin-top: 10px;
+}
+
+button {
+    background-color: #010101;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 20px;
+    width: 300px;
+}
+
+.box {
+    border: 2px solid #ccc;
+    border-radius: 10px; /* Adjust for more/less rounding */
+    padding: 20px;
+    width: 300px;
+    height: auto;
+    max-height: 450px;
+    outline: none;
+    text-align: left;
+}
+
+.container {
+  display: flex;
+  justify-content: center; /* Centers horizontally */
+  /* align-items: center;  Centers vertically */
+  height: 100vh; /* Full viewport height */
+}
+
+button.userHome {
+  background-color: #010101;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-size: 16px;
+  margin-top: 20px;
+  margin: 15px;
+  height: 40px;
+  width: auto;
+}
+
+ul.items {
+  list-style-type: none;
+  padding: 0;
+}
+
+li.items {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 15px;
+  transition: background 0.3s;
+  background-color: #FEF7FF;
+  border-radius: 10px;
+  margin-top: 10px;
+}
+
+button.items {
+  background-color: #65558F;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-size: 16px;
+  margin-top: 20px;
+  margin: 15px;
+  height: 40px;
+  width: auto;
+}
+
+.volContainer{
+  justify-content: right;
+  align-items: right;
+  height: 100vh;
+}
