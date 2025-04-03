@@ -18,6 +18,7 @@ A comprehensive library management system built with Flask (backend) and React (
 
    # Start the backend server
    python app.py
+   python3 app.py
    ```
    The backend server will run at `http://localhost:8000`
 

@@ -279,7 +279,7 @@ def get_staff_dashboard():
         'phone_num': person.phone_num,
         'age': person.age,
         'wage': staff.wage,
-        # Add other staff-specific fields if needed
+        'position': staff.position
     }), 200
 
 @auth_bp.route('/populate_test_user', methods=['POST'])
