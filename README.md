@@ -2,6 +2,43 @@
 
 A comprehensive library management system built with Flask (backend) and React (frontend) that allows users to manage books, events, staff, volunteers, and more.
 
+## Quick Start Guide
+
+1. **Start the Backend Server First**
+   ```bash
+   # Navigate to backend directory
+   cd cmpt354_mp/backend
+
+   # Create and activate virtual environment
+   python3 -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+   # Install Python dependencies
+   pip install -r requirements.txt
+
+   # Start the backend server
+   python app.py
+   ```
+   The backend server will run at `http://localhost:8000`
+
+2. **Then Start the Frontend (in a new terminal)**
+   ```bash
+   # Navigate to frontend directory
+   cd cmpt354_mp/src
+
+   # Install Node.js dependencies
+   npm install
+
+   # Start the frontend development server
+   npm run dev
+   ```
+   The frontend will run at `http://localhost:5173`
+
+3. **Access the Application**
+   - Open your browser and go to `http://localhost:5173`
+   - Register a new account or log in with existing credentials
+   - Start using the library management system!
+
 ## Table of Contents
 - [Features](#features)
 - [Prerequisites](#prerequisites)
