@@ -74,6 +74,5 @@ def configure_scheduler(app):
     scheduler.start()
     logger.info("Scheduler started successfully.")
 
-
 if __name__ == '__main__':
     app.run(debug=True, port=8000)

@@ -29,7 +29,7 @@ function Donate() {
             const data = await response.json();
             if (response.ok) {
                 alert('Donation successful!');
-                window.location.href = '/userHome';
+                window.location.href = '/donate';
             } else {
                 alert(data.error || 'Donation failed');
             }
