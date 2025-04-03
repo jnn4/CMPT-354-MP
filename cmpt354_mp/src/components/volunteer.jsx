@@ -220,23 +220,8 @@ function volunteer() {
       {message && <div className="success-message">{message}</div>}
       {error && <div className="error-message">{error}</div>}
 
-      <div className="volContainer">
-        <h2>Current Volunteer Positions</h2>
-        <button onClick={populateVolunteer} className="items">Populate Volunteer Positions</button>
-
-        <ul className="items">
-          {volunteers.map((volunteer) => (
-            <li className="items" key={volunteer.volunteer_id}>
-              <strong>{volunteer.role}</strong>
-              <p>Name: {volunteer.first_name} {volunteer.last_name}</p>
-              <p>Email: {volunteer.email}</p>
-              <p>Start Date: {volunteer.start_date}</p>
-              {volunteer.end_date && <p>End Date: {volunteer.end_date}</p>}
-            </li>
-          ))}
-        </ul>
       </div>
-    </div>
+  
   );
 }
 
