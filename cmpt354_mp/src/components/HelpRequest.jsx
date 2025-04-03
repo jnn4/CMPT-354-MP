@@ -40,6 +40,7 @@ function HelpRequest() {
                     onChange={(e) => setRequestText(e.target.value)}
                     required
                 ></textarea>
+                <br></br>
                 <button type="submit">Submit Request</button>
             </form>
             {successMessage && <p className="success-message">{successMessage}</p>}

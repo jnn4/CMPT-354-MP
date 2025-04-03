@@ -15,12 +15,12 @@ function Navbar() {
         return (
             <div className="sidebar">
                 <ul>
-                    <li><a href="/">Home</a></li>
-                    <li><a href="/staffHome">Staff Dashboard</a></li>
-                    <li><a href="/manage-items">Manage Items</a></li>
-                    <li><a href="/manage-events">Manage Events</a></li>
-                    <li><a href="/donate">Manage Future Items</a></li>
-                    <li><a href="/manage-help-requests">Help Requests</a></li>
+                    <a href="/"><li>Home</li></a>
+                    <a href="/staffHome"><li>Staff Dashboard</li></a>
+                    <a href="/manage-items"><li>Manage Items</li></a>
+                    <a href="/manage-events"><li>Manage Events</li></a>
+                    <a href="/donate"><li>Manage Future Items</li></a>
+                    <a href="/manage-help-requests"><li>Help Requests</li></a>
                 </ul>
             </div>
         );
@@ -31,12 +31,12 @@ function Navbar() {
         return (
             <div className="sidebar">
                 <ul>
-                    <li><a href="/">Home</a></li>
-                    <li><a href="/userHome">User Dashboard</a></li>
-                    <li><a href="/items">Items</a></li>
-                    <li><a href="/events">Events</a></li>
-                    <li><a href="/donate">Donate Future Items</a></li>
-                    <li><a href="/help-request">Help Requests</a></li>
+                    <a href="/"><li>Home</li></a>
+                    <a href="/userHome"><li>User Dashboard</li></a>
+                    <a href="/items"><li>Items</li></a>
+                    <a href="/events"><li>Events</li></a>
+                    <a href="/donate"><li>Donate Future Items</li></a>
+                    <a href="/help-request"><li>Help Requests</li></a>
                 </ul>
             </div>
         );
@@ -46,9 +46,9 @@ function Navbar() {
     return (
         <div className="sidebar">
             <ul>
-                <li><a href="/">Home</a></li>
-                <li><a href="/login">Login</a></li>
-                <li><a href="/signup">Sign Up</a></li>
+                <a href="/"><li>Home</li></a>
+                <a href="/login"><li>Login</li></a>
+                <a href="/signup"><li>Sign Up</li></a>
             </ul>
         </div>
     );

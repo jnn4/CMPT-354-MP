@@ -208,10 +208,6 @@ function UserHome() {
             <p>Email: {userData.email}</p>
             <p>Phone Number: {userData.phoneNum}</p>
             <p>Age: {userData.age}</p>
-            
-            <button className="userHome">View Borrowed Items</button>
-            <button className="userHome">Upcoming Events</button>
-            <button className="userHome">Volunteering Position</button>
     
             <div>
                 <h2>Borrowed Items</h2>

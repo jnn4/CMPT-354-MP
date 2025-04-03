@@ -1,7 +1,7 @@
-import '../app.css'
+import '../App.css'
 import React from 'react';
 
-function home (){
+function Home (){
     return (
         <div className ="content">
             <h1>SFU Library</h1>
@@ -12,4 +12,4 @@ function home (){
     );
 }
 
-export default home;
+export default Home;

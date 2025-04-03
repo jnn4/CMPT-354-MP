@@ -42,9 +42,11 @@ function ManageHelpRequest() {
             {helpRequests.length > 0 ? (
                 <ul>
                     {helpRequests.map(req => (
-                        <li key={req.request_id}>
-                            <p>{req.request_text}</p>
-                            <p>Status: {req.status}</p>
+                        <li key={req.request_id} style={{ marginBottom: '5%' }}>
+                            <strong>Description: </strong> {req.request_text}
+                            <br></br>
+                            <strong>Status: </strong> {req.status}
+                            <br></br>
                             <button onClick={() => updateStatus(req.request_id, true)}>Mark as Open</button>
                             <button onClick={() => updateStatus(req.request_id, false)}>Mark as Closed</button>
                         </li>

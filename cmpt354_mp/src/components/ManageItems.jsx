@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import '../App.css';
 
 function ManageItems() {
     const [items, setItems] = useState([]);
@@ -32,18 +33,44 @@ function ManageItems() {
     };
 
     return (
-        <div>
-            <h1>Items</h1>
-            <ul>
+        <div style={{
+            padding: '20px',
+            textAlign: 'center',
+            maxWidth: '800px',  // Limit the width of the container
+            margin: '0 auto',   // Center the container horizontally
+            marginTop: '80px',  // Adjust the top margin to avoid overlapping the navbar
+        }}>
+            <h1 style={{ fontSize: '24px', marginBottom: '20px' }}>Items</h1>
+            <ul id='item-list' style={{ listStyleType: 'none', padding: '0' }}>
                 {items.map(item => (
-                    <li key={item.item_id}>
-                        {item.title} by {item.author} ({item.type})
-                        <button onClick={() => handleDeleteItem(item.item_id)}>Delete</button>
+                    <li 
+                        key={item.item_id} 
+                        style={{
+                            marginBottom: '10px',
+                            padding: '10px',
+                            backgroundColor: '#f0f0f0',
+                            borderRadius: '5px',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                        }}
+                    >
+                        <span>{item.title} by {item.author} ({item.type})</span>
+                        <button 
+                            onClick={() => handleDeleteItem(item.item_id)}
+                            style={{
+                                backgroundColor: '#d9534f',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '5px',
+                            }}
+                        >
+                            Delete
+                        </button>
                     </li>
                 ))}
             </ul>
         </div>
-    );
+    );    
 }
 
 export default ManageItems;

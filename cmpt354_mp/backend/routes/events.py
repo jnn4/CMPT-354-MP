@@ -1,32 +1,33 @@
 from flask import Blueprint, request, jsonify
 from datetime import datetime
-from models import Event, User, attends
+from models import Event, User, attends, Room
 from extensions import db
+from sqlalchemy.orm import joinedload
 
 events_bp = Blueprint('events', __name__)
 
 # Get all events
 @events_bp.route('/', methods=['GET'])
 def get_events():
-    search_query = request.args.get('search', '')
-    event_type = request.args.get('type', None)
-
-    # Filter events based on search query and type
-    query = Event.query
-    if search_query:
-        query = query.filter(Event.name.ilike(f"%{search_query}%"))
-    if event_type:
-        query = query.filter_by(type=event_type)
-    
-    events = query.all()
-    return jsonify([{
-        'event_id': event.event_id,
-        'name': event.name,
-        'type': event.type,
-        'date': event.date.isoformat(),
-        'time': event.time.strftime('%H:%M'),
-        'audience_type': event.audience_type
-    } for event in events]), 200
+    try:
+        events = Event.query.options(joinedload(Event.room)).all()
+        event_data = [{
+            "event_id": event.event_id,
+            "name": event.name,
+            "type": event.type,
+            "date": event.date.isoformat(),  # Convert date to string
+            "time": event.time.strftime('%H:%M'),  # Convert time to string
+            "audience_type": event.audience_type,
+            "room": {
+                "room_id": event.room.room_id,
+                "name": event.room.name,  # Changed from room_ to name
+                "capacity": event.room.capacity
+            } if event.room else None
+        } for event in events]
+        
+        return jsonify(event_data), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 # Attend an event
 @events_bp.route('/attend', methods=['POST'])
@@ -207,4 +208,35 @@ def delete_event(event_id):
         return jsonify({"message": "Event deleted successfully!"}), 200
     except Exception as e:
         db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
+@events_bp.route('/populate_rooms', methods=['POST'])
+def populate_rooms():
+    try:
+        data = request.json.get('rooms', [])
+        
+        for room in data:
+            new_room = Room(
+                name=room['name'],
+                capacity=room['capacity']
+            )
+            db.session.add(new_room)
+
+        db.session.commit()
+        return jsonify({'message': f'{len(data)} rooms populated successfully!'}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+# get all rooms
+@events_bp.route('/rooms', methods=['GET'])
+def get_rooms():
+    try:
+        rooms = Room.query.all()
+        return jsonify([{
+            "room_id": room.room_id,
+            "name": room.name,
+            "capacity": room.capacity
+        } for room in rooms]), 200
+    except Exception as e:
         return jsonify({"error": str(e)}), 500

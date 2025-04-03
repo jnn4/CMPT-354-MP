@@ -2,33 +2,62 @@
 .sidebar {
     width: 250px;
     height: 100vh;
-    position: fixed;
     left: 0;
     top: 0;
-    background-color: #938F99;
-    color: black;
+    background-color: #6D6875; /* More refined shade */
+    color: white;
     padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px; /* Space between sections */
+    position: fixed; /* Fixed position */
+    z-index: 1000; /* Ensure it stays above other content */
 }
 
-  .sidebar ul{
+/* Sidebar Navigation */
+.sidebar ul {
     list-style-type: none;
     padding: 0;
-  }
-  
-  .sidebar li {
+    margin-top: 20px; /* Adds spacing from top */
+}
+
+/* Sidebar List Items */
+.sidebar li {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 15px;
-    transition: background 0.3s;
-  }
-.sidebar li:hover {
-    background: #CAC4D0;
+    gap: 12px;
+    padding: 12px 15px;
+    border-radius: 8px; /* Rounded corners for a modern feel */
+    transition: background 0.3s, transform 0.2s;
+    cursor: pointer;
 }
-  .sidebar a {
-    text-decoration: none;
-    color: black;
-    font-size: 18px;
-  }
 
- 
+/* Hover Effect */
+.sidebar li:hover {
+    background: #B5838D;
+    transform: scale(1.05); /* Slight pop effect */
+}
+
+/* Sidebar Links */
+.sidebar a {
+    text-decoration: none;
+    color: white;
+    font-size: 18px;
+    font-weight: 500;
+    transition: color 0.3s;
+}
+
+.sidebar a:hover {
+    color: #F2E9E4;
+}
+
+/* Responsive Sidebar (Optional) */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 200px;
+        padding: 15px;
+    }
+    .sidebar a {
+        font-size: 16px;
+    }
+}
